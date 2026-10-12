@@ -1,0 +1,2061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My library</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,600;0,800;1,400&family=Fredoka:wght@500;600&family=Pacifico&display=swap" rel="stylesheet">
+<script>
+  try { const t = JSON.parse(localStorage.getItem("my-book-shelf:v1") || "{}").theme; if (t === "dark" || t === "light") document.documentElement.dataset.theme = t; } catch {}
+</script>
+<style>
+  :root {
+    --wall: #D7E0CE; --wall-shade: #C6D2BB; --ink: #1F2A22; --ink-soft: #4C5B4F;
+    --wood-top: #7A4A28; --wood-face: #5C3519; --wood-dark: #2E1A0C;
+    --control: #FFFFFF; --ribbon: #C8102E; --focus: #1D4ED8;
+    --panel: #F7F9F3; --field: #FFFFFF; --line: #AEBDA3; --error: #B42318; --ok: #2F6B3A;
+    --suggest: #FFF6D6; --banner: #E9EFE2; --dust: #6F6250;
+    --wall-bg:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,255,255,.55), transparent 65%),
+      radial-gradient(ellipse 120% 70% at 50% 115%, rgba(40,60,35,.12), transparent 60%);
+    color-scheme: light;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  /* Night library: follows the computer's dark mode until the lamp is pulled */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+    --wall: #1E2A3A; --wall-shade: #2C3B50; --ink: #F3ECDD; --ink-soft: #B7C1CF;
+    --wood-top: #8A5A36; --wood-face: #6B4226; --wood-dark: #2A180D;
+    --control: #2C3B50; --ribbon: #E0334A; --focus: #93C5FD;
+    --panel: #24324A; --field: #1B2638; --line: #4A5B72; --error: #F97066; --ok: #7BC98A;
+    --suggest: #3B3A2A; --banner: #2A3648; --dust: #C9B08C; color-scheme: dark;
+    --wall-bg:
+      radial-gradient(ellipse 34% 46% at 9% 0%, rgba(255,196,110,.30), transparent 70%),
+      radial-gradient(ellipse 60% 50% at 50% -5%, rgba(255,196,110,.14), transparent 70%),
+      radial-gradient(ellipse 50% 40% at 50% 85%, rgba(255,196,110,.08), transparent 70%);
+    }
+  }
+  :root[data-theme="dark"] {
+    --wall: #1E2A3A; --wall-shade: #2C3B50; --ink: #F3ECDD; --ink-soft: #B7C1CF;
+    --wood-top: #8A5A36; --wood-face: #6B4226; --wood-dark: #2A180D;
+    --control: #2C3B50; --ribbon: #E0334A; --focus: #93C5FD;
+    --panel: #24324A; --field: #1B2638; --line: #4A5B72; --error: #F97066; --ok: #7BC98A;
+    --suggest: #3B3A2A; --banner: #2A3648; --dust: #C9B08C; color-scheme: dark;
+    --wall-bg:
+      radial-gradient(ellipse 34% 46% at 9% 0%, rgba(255,196,110,.30), transparent 70%),
+      radial-gradient(ellipse 60% 50% at 50% -5%, rgba(255,196,110,.14), transparent 70%),
+      radial-gradient(ellipse 50% 40% at 50% 85%, rgba(255,196,110,.08), transparent 70%);
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body { margin: 0; min-height: 100vh; background: var(--wall-bg), var(--wall); color: var(--ink); font-family: "Bitter", Georgia, "Times New Roman", serif; transition: background-color .5s ease, color .5s ease; }
+  main { max-width: 1040px; margin: 0 auto; padding: 56px 24px 40px; }
+  main.wide { max-width: 1340px; }
+  h1 { font-family: "Pacifico", "Brush Script MT", "Segoe Script", cursive; font-weight: 400; font-size: clamp(2.6rem, 6.5vw, 4rem); line-height: 1.3; margin: -10px 0 22px; text-align: center; }
+  .cute { font-family: "Fredoka", "Trebuchet MS", "Segoe UI", system-ui, sans-serif; font-weight: 600; letter-spacing: 0; }
+  #count { text-align: center; }
+  .count[hidden] { display: none; }
+  .count { margin: 0 0 28px; color: var(--ink-soft); font-size: 1rem; }
+  .topbar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 16px; }
+  .topbar h1 { grid-column: 2; grid-row: 1; }
+  .topbar .menu { grid-row: 1; }
+
+  /* Hanging lamp: pull the cord for the night library */
+  .lamp-wrap { grid-column: 1; grid-row: 1; justify-self: start; position: relative; margin: -56px 0 0 4px; width: 110px; height: 170px; }
+  .lamp { position: relative; z-index: 3; display: block; padding: 0; border: 0; background: none; cursor: pointer; transform-origin: 45px 0; }
+  .lamp:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+  .lamp svg { display: block; overflow: visible; }
+  .lamp .cord { stroke: var(--ink-soft); stroke-width: 2; }
+  .lamp .cap { fill: #8C6A2E; }
+  .lamp .shade { fill: #2F5A43; stroke: #23402F; stroke-width: 1; }
+  .lamp .rim { stroke: #C9A227; stroke-width: 3; stroke-linecap: round; }
+  .lamp .bulb { fill: #E9E4D6; transition: fill .4s ease, filter .4s ease; }
+  .lamp .pull line { stroke: #B8962E; stroke-width: 1.5; stroke-dasharray: 2 2; }
+  .lamp .pull circle { fill: #C9A227; stroke: #8C6A2E; stroke-width: 1; }
+  .lamp:hover .pull { transform: translateY(3px); }
+  .lamp .pull { transition: transform .2s ease; }
+  .lamp.pulling .pull { animation: pull-cord .5s cubic-bezier(.3,1.6,.5,1); }
+  .lamp.pulling { animation: lamp-sway 1.1s ease-out; }
+  @keyframes pull-cord { 0% { transform: none; } 35% { transform: translateY(16px); } 100% { transform: none; } }
+  @keyframes lamp-sway { 0% { transform: rotate(0); } 25% { transform: rotate(4deg); } 55% { transform: rotate(-3deg); } 80% { transform: rotate(1.5deg); } 100% { transform: rotate(0); } }
+  .beam { position: absolute; z-index: 1; left: -65px; top: 118px; width: 220px; height: 600px; pointer-events: none; opacity: 0; transition: opacity .5s ease; }
+  .lamp-on .lamp .bulb { fill: #FFE7A8; filter: drop-shadow(0 0 6px rgba(255,214,130,.95)) drop-shadow(0 0 18px rgba(255,196,110,.7)); }
+  .lamp-on .beam { opacity: 1; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .6s; }
+  .topbar .menu { grid-column: 3; justify-self: end; }
+  .menu { position: relative; flex: 0 0 auto; margin-top: 6px; }
+  .avatar-btn { display: grid; place-items: center; width: 50px; height: 50px; padding: 0; overflow: hidden; border: 0; border-radius: 50%; background: var(--ink); color: var(--wall); font: inherit; font-weight: 800; font-size: 1.15rem; cursor: pointer; transition: box-shadow .2s ease, transform .15s ease; }
+  .avatar-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+  .avatar-btn[aria-expanded="true"] { box-shadow: 0 0 0 3px var(--wall), 0 0 0 5px var(--ink); }
+  .avatar-btn [hidden] { display: none; }
+  .menu-hello { padding: 10px 14px 8px; margin-bottom: 4px; border-bottom: 1px solid var(--wall-shade); font-weight: 800; }
+  .menu-hello[hidden], .menu-sep[hidden] { display: none; }
+  input.menu-name[type="text"] { width: 100%; padding: 4px 2px 6px; border: 0; border-bottom: 2px solid var(--line); border-radius: 0; background: transparent; color: var(--ink); font: inherit; font-weight: 600; }
+  input.menu-name[type="text"]::placeholder { color: var(--ink-soft); opacity: .75; }
+  input.menu-name[type="text"]:focus-visible { outline: none; border-bottom-color: var(--ink); }
+  .menu-sep { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--wall-shade); }
+  .menu-btn { display: inline-flex; align-items: center; gap: 10px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 999px; background: var(--control); color: var(--ink); font: inherit; font-weight: 600; font-size: .95rem; cursor: pointer; }
+  .menu-btn:hover { box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+  .bars { display: grid; gap: 3px; width: 16px; }
+  .bars span { display: block; height: 2px; border-radius: 2px; background: currentColor; transition: transform .2s ease, opacity .2s ease; }
+  .menu-btn[aria-expanded="true"] .bars span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+  .menu-btn[aria-expanded="true"] .bars span:nth-child(2) { opacity: 0; }
+  .menu-btn[aria-expanded="true"] .bars span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+  .menu-list { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; min-width: 250px; margin: 0; padding: 6px; list-style: none; background: var(--panel); border-radius: 12px; box-shadow: 0 14px 34px rgba(0,0,0,.22); animation: menu-in .18s ease; }
+  .menu-list[hidden] { display: none; }
+  @keyframes menu-in { from { opacity: 0; transform: translateY(-6px); } }
+  .menu-list a { display: grid; gap: 2px; padding: 10px 14px; border-radius: 8px; color: var(--ink); text-decoration: none; font-weight: 600; }
+  .menu-list a small { font-weight: 400; font-size: .85rem; color: var(--ink-soft); }
+  .menu-list a:hover, .menu-list a:focus-visible { background: var(--wall); }
+  .menu-list a[aria-current="page"] { background: var(--wall-shade); }
+  section[hidden] { display: none; }
+  #shelfView, #tableView { animation: view-in .3s ease; }
+  @keyframes view-in { from { opacity: 0; transform: translateY(8px); } }
+
+  /* My shelf table */
+  .view-title { margin: 22px 0 4px; font-size: 1.6rem; font-weight: 800; }
+  .table-wrap { overflow-x: auto; border-radius: 12px; background: var(--panel); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  .books-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  .books-table th { position: sticky; top: 0; padding: 0; text-align: left; background: var(--panel); border-bottom: 2px solid var(--line); white-space: nowrap; }
+  .books-table th button { width: 100%; padding: 12px 8px; border: 0; background: none; color: var(--ink); font: inherit; font-weight: 800; text-align: left; cursor: pointer; }
+  .books-table th button::after { content: "\2195"; margin-left: 6px; opacity: .25; font-weight: 400; }
+  .books-table th[aria-sort="ascending"] button::after { content: "\2191"; opacity: .8; }
+  .books-table th[aria-sort="descending"] button::after { content: "\2193"; opacity: .8; }
+  .books-table th button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+  .books-table td { padding: 9px 8px; border-bottom: 1px solid var(--wall-shade); vertical-align: top; }
+  .books-table tbody tr:hover { background: var(--wall); }
+  .books-table tbody tr:last-child td { border-bottom: 0; }
+  .books-table .num { color: var(--ink-soft); width: 1%; }
+  .books-table .t { font-weight: 600; min-width: 190px; }
+  .books-table .au { min-width: 140px; }
+  .books-table .about { min-width: 170px; max-width: 260px; color: var(--ink-soft); font-style: italic; }
+  .books-table .nowrap { white-space: nowrap; }
+  .tag { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .tag.reading::before { content: ""; width: 7px; height: 12px; background: var(--ribbon); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%); }
+  .mini-spine { display: inline-block; width: 12px; height: 26px; border-radius: 2px; vertical-align: middle; margin-right: 8px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+  .table-empty { color: var(--ink-soft); }
+  .table-hint { margin: -4px 0 14px; font-size: .9rem; color: var(--ink-soft); }
+  .table-hint[hidden], #tableAdd[hidden], #tableUpload[hidden] { display: none; }
+  .table-head { display: flex; align-items: center; gap: 12px; margin: 22px 0 4px; }
+  .table-head .view-title { margin: 0; }
+  #tableView .actions { align-items: center; }
+  .icon-btn { position: relative; display: grid; place-items: center; width: 42px; height: 42px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: var(--control); color: var(--ink); cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+  .icon-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+  .icon-btn:disabled { opacity: .4; cursor: default; transform: none; box-shadow: none; }
+  .icon-btn[hidden] { display: none; }
+  .icon-btn[data-tip]:hover::after, .icon-btn[data-tip]:focus-visible::after {
+    content: attr(data-tip); position: absolute; right: 0; bottom: calc(100% + 8px); padding: 5px 10px; border-radius: 6px;
+    background: var(--ink); color: var(--wall); font-size: .8rem; font-weight: 600; white-space: nowrap; pointer-events: none; }
+  .cell-text {
+    display: block; width: 100%; min-width: 0; min-height: 0; margin: -3px 0; padding: 3px 4px;
+    border: 0; border-bottom: 1px dashed transparent; border-radius: 4px 4px 0 0;
+    background: transparent; color: inherit; font: inherit; line-height: 1.4;
+    resize: none; overflow: hidden; transition: background .15s ease, border-color .15s ease;
+  }
+  .cell-text::placeholder { color: var(--ink-soft); opacity: .6; font-style: italic; }
+  .cell-text:hover, .cell-select:hover { border-bottom-color: var(--line); background: var(--field); }
+  .cell-text:focus, .cell-select:focus { outline: none; border-bottom: 2px solid var(--focus); background: var(--field); }
+  .t .cell-text { font-weight: 600; }
+  .about .cell-text { font-style: italic; color: var(--ink-soft); }
+  .cell-select {
+    appearance: none; -webkit-appearance: none; margin: -3px 0; padding: 3px 18px 3px 4px;
+    border: 0; border-bottom: 1px dashed transparent; border-radius: 4px 4px 0 0; color: inherit; font: inherit; cursor: pointer;
+    background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2355625B' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 4px center;
+  }
+  .status-cell { display: flex; align-items: center; gap: 6px; }
+  .status-cell .flag { width: 7px; height: 12px; flex: 0 0 auto; background: var(--ribbon); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%); }
+  .status-cell .flag[hidden] { visibility: hidden; display: block; }
+  .spine-cell { display: flex; align-items: center; gap: 2px; }
+  .swatch-pick { position: relative; display: inline-flex; cursor: pointer; border-radius: 3px; }
+  .swatch-pick .mini-spine { margin-right: 4px; transition: transform .15s ease; }
+  .swatch-pick:hover .mini-spine { transform: scale(1.12); }
+  .swatch-pick input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+  .swatch-pick:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .del-btn { display: grid; place-items: center; width: 30px; height: 30px; margin: -4px 0; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink-soft); font-size: 1.1rem; cursor: pointer; }
+  .del-btn:hover { background: var(--wall-shade); color: var(--error); }
+  .books-table .del { width: 1%; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .books-table tr.flash td { animation: row-flash 1.6s ease; }
+  @keyframes row-flash { from { background: var(--suggest); } }
+  .table-empty[hidden], .table-wrap[hidden] { display: none; }
+  .table-empty a { color: var(--ink); }
+
+  /* Controls */
+  .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .actions[hidden], .controls[hidden] { display: none; }
+  #tableView .controls { margin: 0 0 16px; }
+  .btn-ghost:disabled { opacity: .4; cursor: default; }
+  .switch { position: relative; display: inline-flex; gap: 22px; padding: 0 0 4px; }
+  .switch button { position: relative; z-index: 1; border: 0; background: none; padding: 6px 0; font: inherit; font-size: 1rem; font-weight: 600; color: var(--ink-soft); cursor: pointer; transition: color .25s ease; }
+  .switch button:hover { color: var(--ink); }
+  .switch button[aria-pressed="true"] { color: var(--ink); }
+  .switch .pill { position: absolute; bottom: 0; left: 0; height: 2px; border-radius: 2px; background: var(--ink); transition: transform .35s cubic-bezier(.3,.9,.3,1), width .35s cubic-bezier(.3,.9,.3,1); }
+  .btn { border: 0; border-radius: 999px; padding: 11px 20px; background: var(--ink); color: var(--wall); font: inherit; font-weight: 600; font-size: .95rem; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+  .btn-ghost { border: 1px solid var(--line); border-radius: 999px; padding: 10px 18px; background: none; color: var(--ink); font: inherit; font-weight: 600; font-size: .95rem; cursor: pointer; }
+  .btn-ghost:hover { background: var(--wall-shade); }
+  button:focus-visible, a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .banner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0 0 18px; padding: 12px 16px; border-radius: 10px; background: var(--banner); font-size: .95rem; }
+  .banner[hidden] { display: none; }
+  .banner p { margin: 0; flex: 1 1 320px; }
+  .banner .btn-ghost { padding: 7px 14px; font-size: .9rem; }
+
+  /* Shelf */
+  .shelf { position: relative; }
+  .greet { margin: 0 0 6px; text-align: center; font-size: 1.6rem; animation: greet-in .5s ease; }
+  .greet[hidden] { display: none; }
+  @keyframes greet-in { from { opacity: 0; transform: translateY(8px); } }
+  .shelf-row { position: relative; display: flex; align-items: flex-end; min-height: 310px; }
+  /* Scroll arrows sit outside the shelf, just past its right end */
+  .scroll-arrows { position: absolute; right: 0; bottom: -66px; display: flex; gap: 8px; z-index: 2; }
+  /* Currently reading: at the start of the shelf, leaning on a bookend */
+  .reading-zone { flex: 0 0 auto; display: flex; align-items: flex-end; min-width: 220px; padding: 28px 0 0 6px; }
+  .reading-zone .bookend { flex: 0 0 auto; width: 16px; height: 150px; margin-right: 36px; border-radius: 8px 8px 0 0;
+    background: linear-gradient(90deg, var(--wood-dark), var(--wood-top) 45%, var(--wood-face)); box-shadow: 3px 0 6px rgba(0,0,0,.2); }
+  #readingGroup .book { --tilt: -12deg; transform-origin: bottom left; margin-right: 6px; }
+  .ghost-book { width: 38px; height: 200px; margin-right: 6px; padding: 0; border: 2px dashed var(--ink-soft); border-radius: 3px; background: rgba(255,255,255,.12);
+    color: var(--ink-soft); font: inherit; font-size: 1.5rem; cursor: pointer; opacity: .55; transform: rotate(-12deg); transform-origin: bottom left; transition: opacity .2s ease; }
+  .ghost-book:hover, .ghost-book:focus-visible { opacity: 1; }
+  .ghost-book.upright { flex: 0 0 auto; height: 230px; transform: none; }
+  .shelf.asking-name .shelf-row, .shelf.asking-name .shelf-labels { visibility: hidden; }
+  .ghost-book[hidden] { display: none; }
+  /* Read books: after a gap, scrolling sideways with arrows */
+  .read-zone { position: relative; flex: 1 1 auto; min-width: 0; margin-left: 30px; }
+  .books { display: flex; align-items: flex-end; padding: 28px 28px 0; overflow-x: auto; overflow-y: hidden; scroll-behavior: smooth; scrollbar-width: none; }
+  .books::-webkit-scrollbar { display: none; }
+  .group { display: flex; align-items: flex-end; flex: 0 0 auto; }
+  .shelf.no-reading .reading-zone, .shelf.is-empty .reading-zone { display: none; }
+  .shelf.is-empty .books { min-height: 0; }
+  .shelf.no-reading .read-zone, .shelf.is-empty .read-zone { margin-left: 0; }
+  .shelf-labels { display: grid; grid-template-columns: var(--reading-w, 0px) 1fr; align-items: center; padding: 10px 0 0; font-size: .9rem; color: var(--ink-soft); }
+  .shelf-labels[hidden] { display: none; }
+  .shelf-labels .lbl { display: flex; align-items: center; gap: 8px; min-height: 30px; white-space: nowrap; }
+  #readingLabel { padding-left: 10px; }
+  #readLabel { padding-left: 28px; }
+  .shelf.no-reading .shelf-labels { grid-template-columns: 0 1fr; }
+  .shelf.no-reading #readingLabel { display: none; }
+  .shelf.no-reading #readLabel { padding-left: 28px; }
+  .plus { display: grid; place-items: center; width: 28px; height: 28px; padding: 0 0 2px; border: 0; border-radius: 50%; background: var(--ink); color: var(--wall);
+    font: inherit; font-size: 1.15rem; font-weight: 700; line-height: 1; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+  .plus:hover { transform: scale(1.12); box-shadow: 0 3px 10px rgba(0,0,0,.25); }
+  .plus[hidden] { display: none; }
+  .plus.full { opacity: .35; }
+  .shelf-labels .reading-label::before { content: ""; display: inline-block; width: 7px; height: 12px; margin-right: 7px; vertical-align: -1px; background: var(--ribbon); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%); }
+  .plank { height: 20px; border-bottom: 3px solid var(--wood-dark); box-shadow: 0 16px 20px -10px rgba(0,0,0,.5), 0 -1px 0 rgba(255,255,255,.15) inset; border-radius: 2px;
+    background: repeating-linear-gradient(90deg, rgba(0,0,0,.05) 0 2px, transparent 2px 23px, rgba(255,255,255,.04) 23px 25px, transparent 25px 61px), linear-gradient(to bottom, var(--wood-top) 0 5px, var(--wood-face) 5px 100%); }
+  .empty { position: absolute; left: 0; right: 0; bottom: 64px; display: grid; justify-items: center; gap: 16px; text-align: center; padding: 0 16px; }
+  .empty[hidden] { display: none; }
+  .empty h2 { margin: 0; font-size: 1.6rem; font-weight: 800; }
+  .empty p { margin: -6px 0 0; color: var(--ink-soft); max-width: 46ch; line-height: 1.5; }
+  .empty .start { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+  .empty .start[hidden], .switch[hidden], .empty [hidden] { display: none; }
+  .empty-main { display: grid; justify-items: center; gap: 16px; }
+  .name-step { display: grid; justify-items: center; gap: 14px; }
+  .name-row { display: flex; }
+  .name-row input[type="text"] { width: 320px; padding: 6px 2px 8px; border: 0; border-bottom: 2px solid var(--ink-soft); border-radius: 0; background: transparent;
+    color: var(--ink); font: inherit; font-size: 1.3rem; text-align: center; transition: border-color .2s ease; }
+  .name-row input[type="text"]::placeholder { color: var(--ink-soft); opacity: .6; font-size: 1rem; }
+  .name-row input[type="text"]:focus-visible { outline: none; border-bottom-color: var(--ink); }
+  .link-btn { border: 0; background: none; padding: 2px; font: inherit; font-size: .95rem; color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .link-btn:hover { color: var(--ink); }
+  .reading-btn::before { content: ""; display: inline-block; width: 8px; height: 13px; margin-right: 8px; vertical-align: -1px; background: var(--ribbon); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 75%, 0 100%); }
+
+  .book {
+    flex: 0 0 auto; position: relative; display: flex; flex-direction: column; align-items: center;
+    padding: 18px 0 14px; margin: 0 3px 0 0; border: 0; font: inherit; color: var(--spine-ink);
+    background: linear-gradient(90deg, rgba(0,0,0,.28) 0, rgba(255,255,255,.14) 16%, rgba(255,255,255,0) 42%, rgba(0,0,0,.08) 80%, rgba(0,0,0,.3) 100%), var(--spine);
+    border-radius: 2px 2px 0 0; cursor: pointer; transform-origin: bottom center;
+    transition: transform .22s cubic-bezier(.2,.8,.3,1.2), box-shadow .22s ease,
+      width .45s cubic-bezier(.4,0,.2,1) var(--delay, 0s), margin .45s cubic-bezier(.4,0,.2,1) var(--delay, 0s), opacity .3s ease var(--delay, 0s);
+  }
+  .book::before, .book::after { content: ""; position: absolute; left: 4px; right: 4px; height: 4px; border-top: 1px solid currentColor; border-bottom: 1px solid currentColor; opacity: .45; }
+  .book::before { top: 7px; }
+  .book::after { bottom: 5px; }
+  .book.banded::before, .book.banded::after { border-color: var(--band); border-width: 2px; height: 7px; opacity: 1; }
+  .book.shadowed .title, .book.shadowed .author { text-shadow: 0 1px 2px rgba(0,0,0,.55); }
+  .book { transform: rotate(var(--tilt, 0deg)); }
+  .book:hover, .book:focus-visible, .book[aria-pressed="true"] { transform: rotate(var(--tilt, 0deg)) translateY(-16px); box-shadow: 0 16px 14px -8px rgba(0,0,0,.35); z-index: 1; }
+  .book:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .book.is-hidden { width: 0 !important; margin-right: 0; opacity: 0; transform: rotate(var(--tilt, 0deg)) translateY(60px); pointer-events: none;
+    transition: transform .35s cubic-bezier(.5,0,.75,0) var(--delay, 0s), opacity .3s ease var(--delay, 0s),
+      width .45s cubic-bezier(.4,0,.2,1) calc(var(--delay, 0s) + .2s), margin .45s cubic-bezier(.4,0,.2,1) calc(var(--delay, 0s) + .2s); }
+  .book.is-hidden .ribbon { opacity: 0; }
+  .book-spacer { flex: 0 0 auto; height: 1px; transition: width .45s cubic-bezier(.4,0,.2,1); }
+  .book.incoming { visibility: hidden; margin-right: 0; transition: width .45s cubic-bezier(.4,0,.2,1), margin .45s cubic-bezier(.4,0,.2,1); }
+  .title, .author { writing-mode: vertical-rl; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 0; max-width: 100%; }
+  .title { flex: 1 1 auto; font-weight: 800; font-size: 13px; letter-spacing: .01em; }
+  .author { flex: 0 0 auto; max-height: 40%; margin-top: 10px; font-weight: 400; font-size: 10.5px; opacity: .85; }
+  .ribbon { position: absolute; top: -13px; right: 7px; width: 8px; height: 24px; background: var(--ribbon); clip-path: polygon(0 0, 50% 22%, 100% 0, 100% 100%, 0 100%); transition: opacity .3s ease; }
+  .flyer { position: fixed; z-index: 60; margin: 0 !important; pointer-events: none; transform-origin: bottom center; transition: none !important; box-shadow: 0 18px 30px rgba(0,0,0,.3); }
+  .dust { position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--dust); pointer-events: none; z-index: 3; }
+
+  /* Details */
+  .notice { min-height: 1.4em; margin: 10px 0 0; font-size: .95rem; color: var(--ink-soft); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .notice.error { color: var(--error); }
+  .notice button { border: 1px solid var(--line); border-radius: 999px; padding: 3px 12px; background: none; color: var(--ink); font: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; }
+  .details { min-height: 6.4em; margin: 14px 0 0; font-size: 1.05rem; line-height: 1.5; }
+  .details p { margin: 0; }
+  .details .idle { color: var(--ink-soft); }
+  .details strong { font-weight: 800; }
+  .details .d-about { color: var(--ink-soft); }
+  .details q { display: block; max-width: 60ch; margin-top: 6px; font-style: italic; }
+  .book-actions { display: flex; gap: 18px; margin-top: 8px; }
+  .link-action { padding: 2px 0; border: 0; background: none; color: var(--ink); font: inherit; font-size: .95rem; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .link-action:hover { text-decoration-thickness: 2px; }
+  .link-action.danger:hover { color: var(--error); }
+  .book-actions .btn-ghost { padding: 6px 14px; font-size: .88rem; }
+
+  .arrow { position: relative; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--wall-shade); background: var(--control); color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.18); z-index: 2; }
+  .arrow[hidden] { display: none; }
+  .arrow:disabled { opacity: .3; cursor: default; }
+
+  footer { max-width: 1040px; margin: 0 auto; padding: 0 24px 40px; font-size: .9rem; color: var(--ink-soft); display: flex; flex-wrap: wrap; gap: 6px 16px; }
+  footer button { border: 0; background: none; padding: 0; font: inherit; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  footer a { color: inherit; }
+
+  /* Dialogs */
+  dialog { width: min(720px, calc(100vw - 32px)); max-height: calc(100vh - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); padding: 0; border: 0; border-radius: 14px; background: var(--panel); color: var(--ink); box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+  dialog::backdrop { background: rgba(18, 24, 21, .5); backdrop-filter: blur(2px); }
+  dialog[open] { animation: dlg-in .28s cubic-bezier(.2,.9,.3,1); }
+  @keyframes dlg-in { from { opacity: 0; transform: translateY(16px) scale(.98); } }
+  .dlg-body { padding: 26px 28px 24px; }
+  .dlg-body h2 { margin: 0 0 18px; font-size: 1.5rem; font-weight: 800; }
+  #addDialog .dlg-body h2 { font-size: 1.7rem; margin-bottom: 22px; }
+  #addDialog .fields { gap: 22px; }
+  #addDialog .lbl, #addDialog legend { font-size: .95rem; }
+  #addDialog input[type="text"], #addDialog textarea {
+    padding: 6px 2px 8px;
+    border: 0;
+    border-bottom: 2px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    font-size: 1.15rem;
+    transition: border-color .2s ease, background .2s ease;
+  }
+  #addDialog textarea { min-height: 0; resize: none; overflow: hidden; }
+  #addDialog input[type="text"]:hover, #addDialog textarea:hover { border-bottom-color: var(--ink-soft); }
+  #addDialog input[type="text"]:focus-visible, #addDialog textarea:focus-visible { outline: none; border-bottom-color: var(--focus); }
+  #addDialog input::placeholder, #addDialog textarea::placeholder { color: var(--ink-soft); opacity: .65; }
+  #addDialog input.suggested { background: var(--suggest); border-radius: 6px 6px 0 0; padding-left: 8px; }
+  .design { border-top: 1px dashed var(--line); padding-top: 4px; }
+  .design summary {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 0 4px;
+    font-weight: 800; font-size: 1.05rem;
+    cursor: pointer; list-style: none;
+  }
+  .design summary::-webkit-details-marker { display: none; }
+  .design summary small { color: var(--ink-soft); font-weight: 400; font-size: .9rem; }
+  .design summary::after { content: ""; width: 8px; height: 8px; margin-left: 4px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-3px); transition: transform .2s ease; }
+  .design[open] summary::after { transform: rotate(-135deg) translateY(-2px); }
+  .design summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+  .design-body { display: grid; gap: 16px; padding-top: 12px; }
+  .design[open] .design-body { animation: design-in .25s ease; }
+  @keyframes design-in { from { opacity: 0; transform: translateY(-6px); } }
+  .dlg-body .lead { margin: -8px 0 18px; color: var(--ink-soft); line-height: 1.5; max-width: 60ch; }
+  .form-grid { display: grid; grid-template-columns: 1fr 150px; gap: 28px; }
+  .fields { display: grid; gap: 16px; min-width: 0; align-content: start; }
+  .field { display: grid; gap: 6px; min-width: 0; }
+  .lbl, legend { font-size: .9rem; font-weight: 600; }
+  .lbl small, legend small { color: var(--ink-soft); font-weight: 400; }
+  input[type="text"], textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--field); color: var(--ink); font: inherit; font-size: 1rem; }
+  textarea { resize: vertical; min-height: 64px; line-height: 1.45; }
+  input[type="text"]:focus-visible, textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; border-color: transparent; }
+  input.suggested { background: var(--suggest); }
+  fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+  fieldset[hidden] { display: none; }
+  legend { padding: 0; margin-bottom: 6px; }
+  .hint { margin: 2px 0 0; font-size: .86rem; color: var(--ink-soft); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .hint[hidden] { display: none; }
+  .hint.error { color: var(--error); }
+  .hint.ok { color: var(--ok); }
+  .hint button { border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px; background: var(--field); color: var(--ink); font: inherit; font-size: .84rem; font-weight: 600; cursor: pointer; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips label { position: relative; }
+  .chips input, .swatches input[type="radio"] { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .chips span { display: inline-block; padding: 7px 13px; border: 1px solid var(--line); border-radius: 999px; font-size: .92rem; cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease; }
+  .chips input:checked + span { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+  .chips input:focus-visible + span, .swatches input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .swatches label { position: relative; cursor: pointer; }
+  .swatches span { display: block; width: 28px; height: 28px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); }
+  .swatches input:checked + span { box-shadow: inset 0 0 0 1px rgba(0,0,0,.18), 0 0 0 2px var(--panel), 0 0 0 4px var(--ink); }
+  #addDialog .swatches { gap: 10px; }
+  #addDialog .swatches span { width: 32px; height: 32px; }
+  .picker { display: inline-grid; place-items: center; width: 38px; height: 38px; padding: 3px; border-radius: 50%; cursor: pointer;
+    background: conic-gradient(#E53935, #FDD835, #43A047, #1E88E5, #8E24AA, #E53935); }
+  .picker input { width: 32px; height: 32px; padding: 0; border: 3px solid var(--panel); border-radius: 50%; background: var(--panel); cursor: pointer; -webkit-appearance: none; appearance: none; }
+  .picker input::-webkit-color-swatch-wrapper { padding: 0; }
+  .picker input::-webkit-color-swatch { border: 0; border-radius: 50%; }
+  .picker input::-moz-color-swatch { border: 0; border-radius: 50%; }
+  .picker:not(.active) input { opacity: 0; }
+  .picker.active { box-shadow: 0 0 0 2px var(--panel), 0 0 0 4px var(--ink); }
+  .picker:focus-within { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .custom-color { display: inline-flex; align-items: center; gap: 6px; font-size: .88rem; color: var(--ink-soft); }
+  .custom-color input { width: 34px; height: 30px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
+  .preview { display: flex; flex-direction: column; align-items: center; gap: 8px; position: sticky; top: 0; align-self: start; }
+  .preview-stage { width: 100%; height: 300px; display: flex; align-items: flex-end; justify-content: center; }
+  .preview-stage .book { pointer-events: none; margin: 0; }
+  .preview-plank { width: 100%; height: 10px; border-radius: 2px; background: linear-gradient(to bottom, var(--wood-top) 0 3px, var(--wood-face) 3px); }
+  .preview p { margin: 0; font-size: .85rem; color: var(--ink-soft); text-align: center; }
+  .dlg-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+  .dlg-actions .btn, .dlg-actions .btn-ghost { padding: 10px 18px; }
+  .bulk-link { display: inline-flex; align-items: center; gap: 7px; margin-right: auto; padding: 8px 4px; border: 0; background: none; color: var(--ink); font: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .bulk-link[hidden] { display: none; }
+  #uploadDialog { width: min(560px, calc(100vw - 32px)); }
+  #uploadDialog .lead { margin: -6px 0 18px; }
+
+  .sample-row { display: flex; align-items: center; gap: 14px; margin: 0 0 16px; padding: 12px 14px; border-radius: 10px; background: var(--wall); font-size: .9rem; color: var(--ink-soft); line-height: 1.45; }
+  .sample-row span { flex: 1 1 auto; }
+  .sample-row .btn-ghost { display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; padding: 8px 14px; font-size: .9rem; background: var(--panel); }
+  .drop { display: grid; place-items: center; gap: 8px; padding: 28px 16px; border: 2px dashed var(--line); border-radius: 12px; text-align: center; color: var(--ink-soft); cursor: pointer; }
+  .drop.over { border-color: var(--ink); background: var(--wall-shade); }
+  .drop strong { color: var(--ink); }
+  .drop input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .import-summary { margin: 16px 0 0; line-height: 1.5; }
+  .import-summary[hidden] { display: none; }
+  .import-summary ul { margin: 8px 0 0; padding-left: 20px; color: var(--ink-soft); }
+  .progress { margin: 12px 0 0; color: var(--ink-soft); }
+  .colnote { margin: 14px 0 0; font-size: .88rem; color: var(--ink-soft); line-height: 1.5; }
+  .colnote code { font-size: .85rem; background: var(--wall-shade); padding: 1px 5px; border-radius: 4px; }
+
+  @media (max-width: 600px) {
+    main { padding-top: 36px; }
+    .switch { gap: 16px; }
+    .dlg-body { padding: 22px 18px 18px; }
+    .form-grid { grid-template-columns: 1fr; gap: 18px; }
+    .preview { order: -1; position: static; }
+    .preview-stage { height: 280px; }
+    .preview-plank { width: 140px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .book, .book.is-hidden, .switch .pill, .book.incoming { transition: none; }
+    .books { scroll-behavior: auto; }
+    dialog[open] { animation: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="topbar">
+    <div class="lamp-wrap">
+      <svg class="beam" viewBox="0 0 220 600" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="beamFade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFD58A" stop-opacity=".45"/>
+            <stop offset=".75" stop-color="#FFD58A" stop-opacity=".12"/>
+            <stop offset="1" stop-color="#FFD58A" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M85 0 H135 L220 600 H0 Z" fill="url(#beamFade)"/>
+      </svg>
+      <button type="button" class="lamp" id="lamp" aria-pressed="false" aria-label="Pull the lamp cord to turn on night mode" title="Pull the cord">
+        <svg viewBox="0 0 110 170" width="110" height="170" aria-hidden="true">
+          <line class="cord" x1="45" y1="0" x2="45" y2="74"/>
+          <rect class="cap" x="38" y="70" width="14" height="10" rx="2"/>
+          <path class="shade" d="M30 80 H60 L82 118 H8 Z"/>
+          <path class="rim" d="M8 118 H82" />
+          <ellipse class="bulb" cx="45" cy="121" rx="11" ry="6"/>
+          <g class="pull">
+            <line x1="72" y1="112" x2="72" y2="150"/>
+            <circle cx="72" cy="155" r="5.5"/>
+          </g>
+        </svg>
+      </button>
+    </div>
+    <h1 id="shelfName">My library</h1>
+    <nav class="menu" aria-label="Main">
+      <button type="button" class="avatar-btn" id="menuBtn" aria-expanded="false" aria-controls="menuList" aria-label="Profile menu">
+        <svg class="avatar-icon" viewBox="0 0 40 40" width="46" height="46" aria-hidden="true">
+          <text id="avatarLetter" x="20" y="27" text-anchor="middle" font-family="Fredoka, 'Trebuchet MS', sans-serif" font-weight="600" font-size="19" fill="currentColor"></text>
+          <g id="avatarBook" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M9.5 14.5 C 13.8 13, 17.2 13.6, 20 16 C 22.8 13.6, 26.2 13, 30.5 14.5 V 27.5 C 26.2 26.1, 22.8 26.7, 20 29 C 17.2 26.7, 13.8 26.1, 9.5 27.5 Z"/>
+            <path d="M20 16 V 29"/>
+          </g>
+          <path d="M26 -1 H32 V9 L29 6.8 L26 9 Z" fill="#C8102E"/>
+        </svg>
+      </button>
+      <ul class="menu-list" id="menuList" hidden>
+        <li class="menu-hello cute" id="menuHello" hidden></li>
+        <li><a href="#" data-view="shelf">Bookshelf <small>Your books on the shelf</small></a></li>
+        <li><a href="#all-books" data-view="table">All books <small>Every book in a table you can download</small></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <section id="shelfView">
+  <p class="count" id="count" hidden></p>
+
+
+  <div class="controls">
+    <div class="switch" id="switch" role="group" aria-label="Show books">
+      <span class="pill" aria-hidden="true"></span>
+      <button type="button" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" data-filter="Fiction" aria-pressed="false">Fiction</button>
+      <button type="button" data-filter="Non-fiction" aria-pressed="false">Non-fiction</button>
+    </div>
+  </div>
+
+  <div class="shelf" id="shelfBox">
+    <p class="greet cute" id="greet" hidden></p>
+    <div class="shelf-row">
+      <div class="scroll-arrows">
+        <button class="arrow prev" id="prev" aria-label="Scroll read books left" hidden>&#8249;</button>
+        <button class="arrow next" id="next" aria-label="Scroll read books right" hidden>&#8250;</button>
+      </div>
+      <div class="reading-zone" id="readingZone">
+        <div class="bookend" aria-hidden="true"></div>
+        <div class="group" id="readingGroup"></div>
+        <button type="button" class="ghost-book" id="ghostReading" hidden aria-label="Add a book you're reading now" title="Add a book you're reading now">+</button>
+      </div>
+      <div class="read-zone">
+        <div class="books" id="books">
+          <div class="group" id="readGroup"></div>
+          <button type="button" class="ghost-book upright" id="ghostRead" hidden aria-label="Add a book you've read" title="Add a book you've read">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="empty" id="empty" hidden>
+      <form class="name-step" id="nameStep" hidden>
+        <h2 id="nameQ" class="cute">Hi, what's your name?</h2>
+        <div class="name-row">
+          <input type="text" id="nameIn" maxlength="40" autocomplete="given-name" placeholder="Your name, then press Enter" aria-labelledby="nameQ" enterkeyhint="go" required>
+        </div>
+        <button type="button" class="link-btn" id="skipName">Skip</button>
+      </form>
+      <div class="empty-main" id="emptyMain">
+        <h2 id="emptyTitle" class="cute">Your shelf is empty</h2>
+        <p id="emptyText">Add the books you've read one at a time, or upload a list of them in one go.</p>
+        <div class="start" id="emptyStart">
+          <button type="button" class="btn-ghost" id="emptyUpload">Upload list</button>
+          <button type="button" class="btn" id="emptyAdd">+ Add a book</button>
+        </div>
+        <button type="button" class="link-btn" id="emptyReading">Reading something right now?</button>
+      </div>
+    </div>
+    <div class="plank" aria-hidden="true"></div>
+    <div class="shelf-labels" id="shelfLabels" hidden>
+      <div class="lbl" id="readingLabel">
+        <span class="reading-label">Currently reading</span>
+        <button type="button" class="plus" id="plusReading" hidden aria-label="Add a book you're reading now" title="Add a book you're reading now">+</button>
+      </div>
+      <div class="lbl" id="readLabel">
+        <span>Read</span>
+        <button type="button" class="plus" id="plusRead" hidden aria-label="Add a book you've read" title="Add a book you've read">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="notice" id="notice" role="status"></div>
+  <div class="details" id="details" aria-live="polite"></div>
+  </section>
+
+  <section id="tableView" hidden aria-labelledby="tableTitle">
+    <div class="table-head">
+      <h2 class="view-title" id="tableTitle">All books</h2>
+      <button type="button" class="plus" id="tableAdd" hidden aria-label="Add a book you've read" title="Add a book">+</button>
+    </div>
+    <p class="count" id="tableCount"></p>
+    <div class="controls">
+      <div class="switch" id="tableSwitch" role="group" aria-label="Show books">
+        <span class="pill" aria-hidden="true"></span>
+        <button type="button" data-filter="all" aria-pressed="true">All</button>
+        <button type="button" data-filter="Fiction" aria-pressed="false">Fiction</button>
+        <button type="button" data-filter="Non-fiction" aria-pressed="false">Non-fiction</button>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn-ghost" id="tableUpload" hidden>Upload list</button>
+        <button type="button" class="icon-btn" id="tableDownload" aria-label="Download CSV" data-tip="Download CSV">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10.5l5 5 5-5"/><path d="M5 19.5h14"/></svg>
+        </button>
+      </div>
+    </div>
+    <p class="table-hint" id="tableHint" hidden>Click any cell to change it. Changes are saved as you go.</p>
+    <div class="table-wrap">
+      <table class="books-table" id="booksTable">
+        <thead><tr id="tableHead"></tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="notice" id="tableNotice" role="status"></div>
+    <p class="table-empty" id="tableEmpty" hidden>No books on your shelf yet. <a href="#">Go to the bookshelf</a> to add some.</p>
+  </section>
+</main>
+<footer>
+  <button type="button" id="editLink">Edit this shelf</button>
+  <span>Book details from <a href="https://openlibrary.org" target="_blank" rel="noopener">Open Library</a></span>
+</footer>
+
+<!-- Add a book -->
+<dialog id="addDialog" aria-labelledby="addTitle">
+  <form id="addForm" novalidate>
+    <div class="dlg-body">
+      <h2 id="addTitle">Add a book</h2>
+      <div class="form-grid">
+        <div class="fields">
+          <div class="field">
+            <label for="titleIn" class="lbl">Book Title</label>
+            <input type="text" id="titleIn" name="title" required maxlength="120" autocomplete="off" placeholder="e.g. The Alchemist">
+            <p class="hint" id="titleHint" hidden></p>
+          </div>
+          <div class="field">
+            <label for="authorIn" class="lbl">Author Name</label>
+            <input type="text" id="authorIn" name="author" required maxlength="80" autocomplete="off" placeholder="We'll fill this in for you">
+            <p class="hint" id="authorHint" hidden></p>
+          </div>
+          <fieldset>
+            <legend>Category</legend>
+            <div class="chips">
+              <label><input type="radio" name="category" value="Fiction" required><span>Fiction</span></label>
+              <label><input type="radio" name="category" value="Non-fiction"><span>Non-fiction</span></label>
+            </div>
+            <p class="hint" id="categoryHint" hidden></p>
+          </fieldset>
+          <div class="field">
+            <label for="noteIn" class="lbl">About the book <small>(Optional)</small></label>
+            <textarea id="noteIn" name="note" maxlength="300" rows="1" placeholder="A favourite line, or what it's about"></textarea>
+          </div>
+
+          <details class="design" id="design">
+            <summary>Design your book <small>(optional)</small></summary>
+            <div class="design-body">
+              <fieldset>
+                <legend>Thickness</legend>
+                <div class="chips">
+                  <label><input type="radio" name="thickness" value="Thin" data-optional><span>Thin</span></label>
+                  <label><input type="radio" name="thickness" value="Medium" data-optional><span>Medium</span></label>
+                  <label><input type="radio" name="thickness" value="Thick" data-optional><span>Thick</span></label>
+                </div>
+              </fieldset>
+              <fieldset>
+                <legend>Size</legend>
+                <div class="chips">
+                  <label><input type="radio" name="size" value="Small"><span>Small</span></label>
+                  <label><input type="radio" name="size" value="Regular" checked><span>Regular</span></label>
+                  <label><input type="radio" name="size" value="Tall"><span>Tall</span></label>
+                </div>
+              </fieldset>
+              <fieldset>
+                <legend>Spine colour</legend>
+                <div class="chips">
+                  <label><input type="radio" name="spine" value="Solid" checked><span>Solid</span></label>
+                  <label><input type="radio" name="spine" value="Gradient"><span>Gradient</span></label>
+                </div>
+                <div class="swatches" data-group="color" style="margin-top:12px"></div>
+              </fieldset>
+              <fieldset id="color2Set" hidden>
+                <legend id="color2Label">Fades to</legend>
+                <div class="swatches" data-group="color2"></div>
+              </fieldset>
+            </div>
+          </details>
+        </div>
+        <div class="preview" aria-hidden="true">
+          <div class="preview-stage" id="previewStage"></div>
+          <div class="preview-plank"></div>
+          <p id="previewNote">Preview</p>
+        </div>
+      </div>
+      <div class="dlg-actions">
+        <button type="button" class="bulk-link" id="bulkLink">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20V9"/><path d="M7 13.5l5-5 5 5"/><path d="M5 4.5h14"/></svg>
+          Upload in bulk
+        </button>
+        <button type="button" class="btn-ghost" data-close>Cancel</button>
+        <button type="submit" class="btn" id="addSubmit">Add to my shelf</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<!-- Upload a list -->
+<dialog id="uploadDialog" aria-labelledby="uploadTitle">
+  <div class="dlg-body">
+    <h2 id="uploadTitle">Upload list</h2>
+    <p class="lead">Add the books you've already read in one go.</p>
+    <label class="drop" id="drop">
+      <input type="file" id="fileIn" accept=".csv,text/csv">
+      <strong>Choose a CSV file</strong>
+      <span>or drop it here</span>
+    </label>
+    <div class="import-summary" id="importSummary" hidden></div>
+    <fieldset id="importMode" hidden style="margin-top:14px">
+      <legend>What should happen to the books already on your shelf?</legend>
+      <div class="chips">
+        <label><input type="radio" name="mode" value="add" checked><span>Keep them and add these</span></label>
+        <label><input type="radio" name="mode" value="replace"><span>Replace them with this list</span></label>
+      </div>
+    </fieldset>
+    <p class="progress" id="importProgress" role="status"></p>
+    <div class="dlg-actions">
+      <button type="button" class="bulk-link" id="templateLink">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10.5l5 5 5-5"/><path d="M5 19.5h14"/></svg>
+        Download sample CSV
+      </button>
+      <button type="button" class="btn-ghost" data-close>Cancel</button>
+      <button type="button" class="btn" id="importBtn" disabled>Add to my shelf</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  "use strict";
+  // ---------- Settings ----------
+  const BOOKS_FILE = "books.csv";          // your published shelf, next to this page
+  const STORE_KEY = "my-book-shelf:v1";     // where edits are kept in this browser
+  // The sample file: required columns first, and each heading says what goes in it
+  const SAMPLE_CSV =
+    "title (required),author (required),category (required: Fiction or Non-fiction),thickness (optional: Thin / Medium / Thick),size (optional: Small / Regular / Tall),spine (optional: Solid / Gradient),color (optional: a colour name or #hex),color2 (optional: colour a gradient fades to),note (optional: a favourite line)\n" +
+    "Atomic Habits,James Clear,Non-fiction,Medium,Regular,Solid,white,,Small habits add up over time.\n" +
+    "Kane and Abel,Jeffrey Archer,Fiction,Thick,Regular,Gradient,blue,navy,\n" +
+    "The Alchemist,Paulo Coelho,Fiction,,,,,,\n";
+  const CSV_COLUMNS = ["title","author","category","subject","status","thickness","size","spine","color","color2","pages","note"];
+
+  // ---------- Colours ----------
+  const NAMED = {
+    "white": "#F7F5EF", "off white": "#F2EEE3", "cream": "#EADFC2", "beige": "#E3D3B0", "tan": "#D6B46A", "yellow": "#E9C46A",
+    "gold": "#C9A227", "orange": "#F0802F", "red": "#C1272D", "maroon": "#7B2D26", "pink": "#E8A0B4", "purple": "#6B4E9B",
+    "brown": "#6B4226", "green": "#3F6B4A", "dark green": "#24452F", "light green": "#8AB17D", "teal": "#2A9D8F",
+    "light blue": "#A9D3EE", "sky blue": "#7DB3E3", "blue": "#2E5C9A", "deep blue": "#15295E", "dark blue": "#15295E",
+    "navy": "#15295E", "navy blue": "#15295E", "grey": "#8C9196", "gray": "#8C9196", "silver": "#C7CCD1", "black": "#1B1B1B"
+  };
+  const SWATCHES = [["White","#F7F5EF"],["Cream","#EADFC2"],["Tan","#D6B46A"],["Orange","#F0802F"],["Red","#C1272D"],["Maroon","#7B2D26"],
+    ["Green","#3F6B4A"],["Light blue","#A9D3EE"],["Blue","#2E5C9A"],["Navy","#15295E"],["Grey","#8C9196"],["Black","#1B1B1B"]];
+  const validHex = v => typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v.trim());
+  const hexToRgb = h => { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
+  const rgbToHex = (r, g, b) => "#" + [r, g, b].map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, "0")).join("").toUpperCase();
+  const mix = (h, target, t) => { const a = hexToRgb(h), b = hexToRgb(target); return rgbToHex(...a.map((v, i) => v + (b[i] - v) * t)); };
+  const lighten = (h, t) => mix(h, "#FFFFFF", t), darken = (h, t) => mix(h, "#000000", t);
+  function luminance(h) {
+    return hexToRgb(h).map(v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); })
+      .reduce((s, v, i) => s + v * [0.2126, 0.7152, 0.0722][i], 0);
+  }
+  const NAME_RE = new RegExp("\\b(" + Object.keys(NAMED).sort((a, b) => b.length - a.length).join("|") + ")\\b", "g");
+  // Understands "Gradient blue", "Gradient red tan", "White with gray gradient", "Tan yellow with maroon border".
+  function parseColourWords(text) {
+    const t = String(text || "").toLowerCase().replace(/grey/g, "gray").replace(/colou?r/g, "");
+    if (validHex(t)) return { color: t.toUpperCase() };
+    const out = {};
+    const band = t.match(/(?:with|and)\s+([a-z ]+?)\s+(?:border|borders|band|bands|stripe|stripes|edge|edges)/);
+    let rest = t;
+    if (band) {
+      const m = band[1].match(NAME_RE);
+      if (m) { out.spine = "Bands"; out.color2 = NAMED[m[0]]; }
+      rest = t.replace(band[0], " ");
+    }
+    const names = rest.match(NAME_RE) || [];
+    if (names.length) out.color = NAMED[names[0]];
+    if (/gradient|fade|ombre/.test(rest)) {
+      out.spine = "Gradient";
+      out.color2 = names[1] ? NAMED[names[1]] : null;
+    }
+    return out;
+  }
+
+  // ---------- Book model ----------
+  // "the power of now" -> "The Power of Now"; anything typed with its own capitals is left alone.
+  const SMALL_WORDS = new Set("a an the and but or nor for of in on at to by from with as vs".split(" "));
+  function tidyCase(v, isTitle) {
+    v = String(v || "").replace(/\s+/g, " ").trim();
+    if (!v || v !== v.toLowerCase()) return v;
+    return v.split(" ").map((w, i) => (isTitle && i > 0 && SMALL_WORDS.has(w)) ? w
+      : w.replace(/(^|[-'\u2019.])(\p{L})/gu, (m, p, c) => p + c.toUpperCase())).join(" ");
+  }
+  const str = (v, max) => (typeof v === "string" ? v : v == null ? "" : String(v)).trim().slice(0, max);
+  function hash(s) { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; }
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const thicknessFromPages = p => p ? (p <= 220 ? "Thin" : p <= 420 ? "Medium" : "Thick") : null;
+
+  function normCategory(v) {
+    const t = str(v, 40).toLowerCase();
+    if (!t) return "";
+    if (/non|fact/.test(t)) return "Non-fiction";
+    if (/fic|novel|story/.test(t)) return "Fiction";
+    return "";
+  }
+  function normStatus(v) {
+    const t = str(v, 40).toLowerCase();
+    return /current|reading|progress|now/.test(t) ? "Reading" : "Read";
+  }
+  function normThickness(v) {
+    const t = str(v, 20).toLowerCase();
+    return t.startsWith("thin") ? "Thin" : t.startsWith("med") ? "Medium" : t.startsWith("thick") ? "Thick" : "";
+  }
+  function normSize(v) {
+    const t = str(v, 20).toLowerCase();
+    return /small|short|yes|^y$/.test(t) ? "Small" : /tall|large|big/.test(t) ? "Tall" : "Regular";
+  }
+  function normSpine(v) {
+    const t = str(v, 20).toLowerCase();
+    return t.startsWith("grad") ? "Gradient" : t.startsWith("band") || t.startsWith("bord") ? "Bands" : "Solid";
+  }
+
+  // Cleans any record (from the CSV, this browser or the form) into a complete book.
+  function cleanBook(d) {
+    const title = str(d.title, 120);
+    const pages = Math.max(0, Math.min(5000, parseInt(d.pages, 10) || 0));
+    let spine = normSpine(d.spine), color = str(d.color, 40), color2 = str(d.color2, 40);
+    if (!validHex(color)) {
+      const parsed = parseColourWords(color);
+      if (parsed.color) color = parsed.color;
+      if (parsed.spine && !str(d.spine, 20)) spine = parsed.spine;
+      if (parsed.color2 && !validHex(color2)) color2 = parsed.color2;
+    }
+    if (!validHex(color2)) color2 = parseColourWords(color2).color || "";
+    // Anything left blank gets a "random" choice that stays the same for this title on every visit.
+    const seed = hash(title.toLowerCase());
+    if (!validHex(color)) color = SWATCHES[seed % SWATCHES.length][1];
+    if (spine === "Gradient" && !validHex(color2)) color2 = darken(color, .35);
+    if (spine === "Bands" && !validHex(color2)) color2 = luminance(color) > .4 ? "#7A1F2B" : "#E3BE5C";
+    return {
+      title,
+      author: str(d.author, 80),
+      category: normCategory(d.category) || "Non-fiction",
+      subject: str(d.subject, 80),
+      status: normStatus(d.status),
+      thickness: normThickness(d.thickness) || thicknessFromPages(pages) || ["Thin", "Medium", "Medium", "Thick"][(seed >> 4) % 4],
+      size: normSize(d.size),
+      spine, color: color.toUpperCase(), color2: spine === "Solid" ? "" : color2.toUpperCase(),
+      pages: pages || "",
+      note: str(d.note, 300)
+    };
+  }
+
+  // ---------- CSV ----------
+  function parseCSV(text) {
+    const rows = []; let row = [], cell = "", q = false;
+    text = text.replace(/^\uFEFF/, "");
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (q) {
+        if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+        else cell += c;
+      } else if (c === '"') q = true;
+      else if (c === ",") { row.push(cell); cell = ""; }
+      else if (c === "\n" || c === "\r") {
+        if (c === "\r" && text[i + 1] === "\n") i++;
+        row.push(cell); rows.push(row); row = []; cell = "";
+      } else cell += c;
+    }
+    if (cell !== "" || row.length) { row.push(cell); rows.push(row); }
+    return rows.filter(r => r.some(c => c.trim() !== ""));
+  }
+  const ALIASES = {
+    title: ["title", "book name", "book", "name", "book title"],
+    author: ["author", "authors", "writer"],
+    category: ["category", "type", "genre", "fiction"],
+    subject: ["subject", "about", "what it's about", "topic"],
+    status: ["status", "state"],
+    thickness: ["thickness", "thick"],
+    size: ["size", "small", "height"],
+    spine: ["spine", "style", "spine style"],
+    color: ["color", "colour", "spine color", "spine colour"],
+    color2: ["color2", "colour2", "second color", "second colour", "band color", "band colour"],
+    pages: ["pages", "page count", "length"],
+    note: ["note", "notes", "favourite line", "favorite line", "quote", "line", "comment"]
+  };
+  function rowsToRecords(rows) {
+    if (!rows.length) return [];
+    const header = rows[0].map(h => h.replace(/\(.*?\)/g, "").trim().toLowerCase());
+    const index = {};
+    for (const [key, names] of Object.entries(ALIASES)) {
+      const i = header.findIndex(h => names.includes(h));
+      if (i >= 0) index[key] = i;
+    }
+    if (index.title === undefined) throw new Error("no-title");
+    return rows.slice(1).map(r => {
+      const rec = {};
+      for (const [key, i] of Object.entries(index)) rec[key] = (r[i] || "").trim();
+      return rec;
+    }).filter(r => r.title);
+  }
+  const csvCell = v => { v = String(v ?? ""); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  const toCSV = list => [CSV_COLUMNS.join(","), ...list.map(b => CSV_COLUMNS.map(k => csvCell(b[k])).join(","))].join("\n") + "\n";
+
+  // ---------- Book lookup (Open Library) ----------
+  function categoryFromSubjects(subjects) {
+    if (!Array.isArray(subjects) || !subjects.length) return "";
+    const s = subjects.join(" | ").toLowerCase();
+    if (/non-?fiction/.test(s)) return "Non-fiction";
+    if (/\bfiction\b|\bnovel\b|thriller|mystery|fantasy|romance/.test(s)) return "Fiction";
+    return "Non-fiction";
+  }
+  async function lookupBook(title, signal) {
+    const url = "https://openlibrary.org/search.json?q=" + encodeURIComponent(title) +
+      "&limit=1&fields=title,author_name,number_of_pages_median,subject";
+    const res = await fetch(url, { signal });
+    if (!res.ok) throw new Error("lookup-failed");
+    const data = await res.json();
+    const doc = data && Array.isArray(data.docs) ? data.docs[0] : null;
+    if (!doc) return null;
+    return {
+      title: str(doc.title, 120),
+      author: Array.isArray(doc.author_name) ? str(doc.author_name[0], 80) : "",
+      pages: parseInt(doc.number_of_pages_median, 10) || 0,
+      category: categoryFromSubjects(doc.subject)
+    };
+  }
+
+  // ---------- Storage ----------
+  function readStore() {
+    try { const raw = localStorage.getItem(STORE_KEY); return raw ? JSON.parse(raw) : {}; } catch { return {}; }
+  }
+  function writeStore(patch) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify({ ...readStore(), ...patch })); return true; } catch { return false; }
+  }
+
+  // ---------- Elements ----------
+  const $ = id => document.getElementById(id);
+  const shelf = $("books"), details = $("details"), countEl = $("count"), notice = $("notice"), emptyEl = $("empty");
+  const plank = document.querySelector(".plank"), prev = $("prev"), next = $("next");
+  const readGroup = $("readGroup"), readingGroup = $("readingGroup");
+  const groupOf = b => b.status === "Reading" ? readingGroup : readGroup;
+  let groupTimer = null;
+  // Currently reading books lean at the start of the shelf; read books follow after a gap.
+  const shelfBox = $("shelfBox"), readingZone = $("readingZone");
+  const tiltOf = b => b.status === "Reading" ? "rotate(-12deg) " : "";
+  function measureZones() { shelfBox.style.setProperty("--reading-w", readingZone.offsetWidth + 30 + "px"); }
+  if (window.ResizeObserver) new ResizeObserver(measureZones).observe(readingZone);
+  function updateGroups() {
+    const anyReading = entries.some(e => e.b.status === "Reading" && matches(e.b));
+    clearTimeout(groupTimer);
+    const apply = () => {
+      // While editing, an empty reading spot shows a dashed "ghost" book to click.
+      shelfBox.classList.toggle("no-reading", !anyReading && !editing);
+      const anyRead = entries.some(e => e.b.status !== "Reading" && matches(e.b));
+      shelfBox.classList.toggle("is-empty", !shelfBooks.length && !editing);
+      $("ghostReading").hidden = anyReading || !editing;
+      $("ghostRead").hidden = anyRead || !editing;
+      const full = readingCount() >= MAX_READING;
+      $("plusReading").classList.toggle("full", full);
+      $("plusReading").title = full ? "You can read up to " + MAX_READING + " books at a time" : "Add a book you're reading now";
+      $("shelfLabels").hidden = !shelfBooks.length && !editing;
+      measureZones();
+      updateArrows();
+    };
+    if (anyReading || editing) apply(); else groupTimer = setTimeout(apply, reduceMotion ? 0 : 650);
+  }
+  const editLink = $("editLink");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+
+  // ---------- State ----------
+  let published = null;      // books from books.csv, or null when there is no file
+  let editing = false;
+  let shelfBooks = [];       // what is on screen
+  const entries = [];        // { b, el }
+  let currentFilter = "all";
+  let selected = null;
+  const matches = b => currentFilter === "all" || b.category === currentFilter;
+
+  // ---------- Rendering a spine ----------
+  const BASE_WIDTH = { Thin: 30, Medium: 41, Thick: 55 };
+  const spineWidth = b => BASE_WIDTH[b.thickness] + (b.pages ? Math.max(-3, Math.min(3, Math.round((b.pages - 300) / 60))) : 0);
+  const spineHeight = b => { const h = hash(b.title || "x"); return b.size === "Small" ? 178 + h % 16 : b.size === "Tall" ? 258 + h % 10 : 228 + h % 24; };
+  const surname = name => (name.split(/\s+and\s+|\s*&\s*|,/)[0] || name).trim().split(/\s+/).pop() || "";
+
+  function makeBookEl(b) {
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "book";
+    const reading = b.status === "Reading";
+    el.setAttribute("aria-label", b.title + (b.author ? " by " + b.author : "") + (reading ? ", currently reading" : ""));
+    let ink, background;
+    if (b.spine === "Gradient") {
+      background = "linear-gradient(180deg, " + b.color + ", " + b.color2 + ")";
+      ink = (luminance(b.color) + luminance(b.color2)) / 2 > .4 ? "#1A1A1A" : "#FFFFFF";
+      if (ink === "#FFFFFF") el.classList.add("shadowed");
+    } else {
+      background = b.color;
+      ink = luminance(b.color) > .4 ? "#1A1A1A" : "#FFFFFF";
+    }
+    if (b.spine === "Bands") { el.classList.add("banded"); el.style.setProperty("--band", b.color2); }
+    el.style.setProperty("--spine", background);
+    el.style.setProperty("--spine-ink", ink);
+    el.style.width = spineWidth(b) + "px";
+    el.style.height = spineHeight(b) + "px";
+    el.innerHTML = (reading ? '<span class="ribbon" aria-hidden="true"></span>' : "") + '<span class="title"></span><span class="author"></span>';
+    el.querySelector(".title").textContent = b.title;
+    el.querySelector(".author").textContent = b.author ? surname(b.author) : "";
+    return el;
+  }
+
+  // ---------- Details ----------
+  // Remembers what the details panel shows, so it isn't redrawn under the pointer
+  // (a redraw between mouse down and up would swallow clicks on its buttons).
+  let shownBook = null, shownKey = "";
+  function showIdle() {
+    if (selected) return showBook(selected.b);
+    shownBook = null; shownKey = "";
+    const msg = shelfBooks.length ? "Hover over or tap a book to see its details." : "";
+    details.innerHTML = msg ? '<p class="idle"></p>' : "";
+    if (msg) details.firstChild.textContent = msg;
+  }
+  function showBook(b) {
+    const key = [b.title, b.status, b.note, editing && selected && selected.b === b].join("|");
+    if (shownBook === b && shownKey === key) return;
+    shownBook = b; shownKey = key;
+    details.innerHTML = '<p><strong></strong><span class="a"></span></p><p class="d-about"></p>';
+    details.querySelector("strong").textContent = b.title;
+    details.querySelector(".a").textContent = b.author ? " by " + b.author : "";
+    details.querySelector(".d-about").textContent = b.category + (b.subject ? " / " + b.subject : "") + (b.status === "Reading" ? " / Currently reading" : "");
+    if (b.note) { const q = document.createElement("q"); q.textContent = b.note; details.appendChild(q); }
+    if (editing && selected && selected.b === b) {
+      const box = document.createElement("div");
+      box.className = "book-actions";
+      box.appendChild(actionLink("Edit", () => openEdit(selected)));
+      if (b.status === "Reading") box.appendChild(actionLink("Mark as read", () => markRead(selected)));
+      box.appendChild(actionLink("Remove", () => removeBook(selected), "danger"));
+      details.appendChild(box);
+    }
+  }
+  function actionLink(text, fn, kind) { const x = document.createElement("button"); x.type = "button"; x.className = "link-action" + (kind ? " " + kind : ""); x.textContent = text; x.addEventListener("click", fn); return x; }
+  function actionBtn(text, fn) { const x = document.createElement("button"); x.type = "button"; x.className = "btn-ghost"; x.textContent = text; x.addEventListener("click", fn); return x; }
+  function setNotice(text, opts = {}) {
+    const target = $("tableView").hidden ? notice : $("tableNotice");
+    const other = target === notice ? $("tableNotice") : notice;
+    other.replaceChildren();
+    target.className = "notice" + (opts.error ? " error" : "");
+    target.replaceChildren(document.createTextNode(text));
+    if (opts.undo) target.appendChild(actionBtn("Undo", opts.undo)).className = "";
+  }
+
+  // ---------- Shelf ----------
+  function addEntry(b, opts = {}) {
+    const el = makeBookEl(b);
+    const entry = { b, el };
+    el.addEventListener("mouseenter", () => showBook(b));
+    el.addEventListener("mouseleave", showIdle);
+    el.addEventListener("focus", () => showBook(b));
+    el.addEventListener("blur", showIdle);
+    el.addEventListener("click", () => select(entry));
+    if (opts.incoming) { el.dataset.width = el.style.width; el.style.width = "0px"; el.classList.add("incoming"); }
+    else if (!matches(b)) { el.classList.add("is-hidden"); el.inert = true; }
+    const parent = groupOf(b);
+    if (opts.at !== undefined && entries[opts.at]) {
+      const nextSame = entries.slice(opts.at).find(e => groupOf(e.b) === parent);
+      if (nextSame) parent.insertBefore(el, nextSame.el); else parent.appendChild(el);
+      entries.splice(opts.at, 0, entry);
+    } else { parent.appendChild(el); entries.push(entry); }
+    return entry;
+  }
+  function select(entry) {
+    if (selected && selected !== entry) selected.el.setAttribute("aria-pressed", "false");
+    selected = selected === entry ? null : entry;
+    entry.el.setAttribute("aria-pressed", String(selected === entry));
+    if (selected) showBook(entry.b); else showIdle();
+  }
+  function clearSelection() { if (selected) { selected.el.setAttribute("aria-pressed", "false"); selected = null; } }
+
+  function renderShelf(list) {
+    clearSelection();
+    entries.splice(0).forEach(e => e.el.remove());
+    shelfBooks = list;
+    list.forEach(b => addEntry(b));
+    refresh();
+  }
+  function refresh() {
+    updateCount();
+    updateArrows();
+    updateEditUI();
+    showIdle();
+    const empty = shelfBooks.length === 0;
+    const st = readStore();
+    const askName = empty && editing && !st.name && !st.nameSkipped;
+    // New shelves ask for a name first; after that an empty shelf just shows dashed books to fill.
+    emptyEl.hidden = !(empty && (askName || !editing));
+    shelfBox.classList.toggle("asking-name", askName);
+    updateGroups();
+    if (!$("tableView").hidden) renderTable();
+    $("nameStep").hidden = !askName;
+    $("emptyMain").hidden = askName;
+    $("emptyTitle").textContent = "This shelf is empty";
+    // A friendly hello above the empty shelf, once the name step is done
+    $("greet").hidden = !(empty && editing && !askName);
+    $("greet").textContent = st.name ? "Hi " + st.name + ", let's add books to your shelf" : "Hi, let's add books to your shelf";
+    $("emptyText").hidden = $("emptyStart").hidden = $("emptyReading").hidden = true;
+    switchEl.hidden = empty;
+    if (!empty) movePill(switchEl.querySelector('[aria-pressed="true"]'));
+  }
+  function updateCount() {
+    const shown = shelfBooks.filter(matches);
+    const reading = shown.filter(b => b.status === "Reading").length;
+    const read = shown.length - reading;
+    const label = (currentFilter === "all" ? "" : currentFilter.toLowerCase() + " ") + (read === 1 ? "book" : "books");
+    countEl.textContent = !shelfBooks.length ? "No books yet"
+      : read + " " + label + " read" + (reading ? ", " + reading + " currently reading (marked with a bookmark)" : "");
+  }
+
+  // Fiction / non-fiction switch
+  const switchEl = $("switch"), pill = switchEl.querySelector(".pill"), filterBtns = [...switchEl.querySelectorAll("button")];
+  function movePill(btn) { pill.style.width = btn.offsetWidth + "px"; pill.style.transform = "translateX(" + btn.offsetLeft + "px)"; }
+  function applyFilter(filter) {
+    currentFilter = filter;
+    clearSelection();
+    let nLeave = 0, nStay = 0;
+    entries.forEach(({ b, el }) => {
+      if (el.classList.contains("incoming")) return;
+      const show = matches(b);
+      el.style.setProperty("--delay", ((show ? nStay++ : nLeave++) * 0.02) + "s");
+      el.classList.toggle("is-hidden", !show);
+      el.inert = !show;
+    });
+    updateCount(); showIdle();
+    updateGroups();
+    shelf.scrollTo({ left: 0 });
+    setTimeout(updateArrows, 900);
+  }
+  function selectFilter(btn) {
+    filterBtns.forEach(x => x.setAttribute("aria-pressed", String(x === btn)));
+    movePill(btn);
+    applyFilter(btn.dataset.filter);
+  }
+  filterBtns.forEach(btn => btn.addEventListener("click", () => selectFilter(btn)));
+
+  // Arrows when the books don't fit
+  function updateArrows() {
+    const overflow = shelf.scrollWidth > shelf.clientWidth + 1;
+    prev.hidden = next.hidden = !overflow;
+    prev.disabled = shelf.scrollLeft <= 1;
+    next.disabled = shelf.scrollLeft + shelf.clientWidth >= shelf.scrollWidth - 1;
+  }
+  const step = () => Math.max(120, shelf.clientWidth * 0.8);
+  prev.addEventListener("click", () => shelf.scrollBy({ left: -step() }));
+  next.addEventListener("click", () => shelf.scrollBy({ left: step() }));
+  shelf.addEventListener("scroll", updateArrows, { passive: true });
+  window.addEventListener("resize", () => { movePill(switchEl.querySelector('[aria-pressed="true"]')); updateArrows(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => movePill(switchEl.querySelector('[aria-pressed="true"]')));
+
+  // ---------- Editing ----------
+  function save(opts = {}) {
+    const ok = writeStore({ books: shelfBooks });
+    if (!ok) setNotice("This browser isn't letting the page save. Download books.csv to keep your changes.", { error: true });
+    updateEditUI();
+    if (!$("tableView").hidden && !opts.quiet) renderTable();
+  }
+  // Changes one book (from the table) and redraws its spine on the shelf.
+  function updateBook(oldB, patch) {
+    const next = cleanBook({ ...oldB, ...patch });
+    const si = shelfBooks.indexOf(oldB);
+    if (si < 0) return oldB;
+    shelfBooks[si] = next;
+    const ei = entries.findIndex(e => e.b === oldB);
+    if (ei >= 0) {
+      const old = entries[ei];
+      if (selected === old) selected = null;
+      entries.splice(ei, 1);
+      old.el.remove();
+      addEntry(next, { at: ei });
+    }
+    save({ quiet: true });
+    updateCount();
+    updateGroups();
+    updateTableSummary();
+    return next;
+  }
+  function updateEditUI() {
+    $("plusRead").hidden = $("plusReading").hidden = !editing;
+    // The footer link switches between editing and seeing the shelf as visitors do
+    editLink.textContent = editing ? "Done editing" : "Edit this shelf";
+    editLink.hidden = editing && !shelfBooks.length;
+  }
+  function startEditing() {
+    editing = true;
+    const stored = readStore();
+    writeStore({ editing: true, books: stored.books || shelfBooks });
+    renderShelf((stored.books || shelfBooks).map(cleanBook));
+  }
+  function stopEditing() {
+    editing = false;
+    writeStore({ editing: false });
+    renderShelf(published && published.length ? published : (readStore().books || []).map(cleanBook));
+    setNotice("");
+  }
+  editLink.addEventListener("click", () => editing ? stopEditing() : startEditing());
+  $("emptyAdd").addEventListener("click", () => openAdd("read"));
+  $("emptyReading").addEventListener("click", () => openAdd("reading"));
+  $("emptyUpload").addEventListener("click", () => openUpload());
+  $("nameStep").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = tidyCase($("nameIn").value, false).slice(0, 40);
+    if (!name) { $("nameIn").focus(); return; }
+    writeStore({ name });
+    updateProfile();
+    refresh();
+    $("ghostRead").focus();
+  });
+  $("skipName").addEventListener("click", () => { writeStore({ nameSkipped: true }); refresh(); $("ghostRead").focus(); });
+
+  function download(name, text) {
+    const url = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+    const a = Object.assign(document.createElement("a"), { href: url, download: name });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  $("templateLink").addEventListener("click", () => {
+    download("sample-books.csv", SAMPLE_CSV);
+  });
+
+  // Currently reading books join the end of the leaning pile; newly read books go to the
+  // front of the read section, so the latest ones sit right after the gap.
+  const firstRead = list => { const i = list.findIndex(x => (x.b || x).status !== "Reading"); return i < 0 ? list.length : i; };
+  function placeNewBook(b, opts = {}) {
+    if (b.status === "Reading") { shelfBooks.push(b); return addEntry(b, opts); }
+    shelfBooks.splice(firstRead(shelfBooks), 0, b);
+    return addEntry(b, { ...opts, at: firstRead(entries) });
+  }
+  function removeBook(entry) {
+    const i = entries.indexOf(entry);
+    if (i < 0) return;
+    clearSelection();
+    const { b, el } = entry;
+    el.style.setProperty("--delay", "0s");
+    el.classList.add("is-hidden");
+    el.inert = true;
+    entries.splice(i, 1);
+    shelfBooks = shelfBooks.filter(x => x !== b);
+    setTimeout(() => el.remove(), reduceMotion ? 0 : 700);
+    save(); updateCount(); showIdle(); updateGroups(); setTimeout(() => shelfBooks.length ? updateArrows() : refresh(), 750);
+    setNotice("Removed " + b.title + ".", { undo: () => {
+      shelfBooks.splice(Math.min(i, shelfBooks.length), 0, b);
+      const e = addEntry(b, { at: i });
+      e.el.animate([{ opacity: 0, transform: "translateY(-30px)" }, { opacity: 1, transform: "none" }], { duration: reduceMotion ? 0 : 350, easing: "ease-out" });
+      save(); updateCount(); updateGroups(); updateArrows(); setNotice("");
+    }});
+  }
+  // Marking as read: the book pops up out of the leaning pile, straightens, glides over
+  // the gap and settles at the front of the read side. The pile closes up and the read
+  // books slide along to make room while it's in the air.
+  let marking = false;
+  async function markRead(entry) {
+    if (marking) return;
+    const el = entry.el, b = entry.b;
+    el.style.transform = "none";
+    const start = el.getBoundingClientRect();
+    el.style.transform = "";
+    const flyer = reduceMotion ? null : makeBookEl(b);   // a copy that still has its bookmark
+
+    b.status = "Read";
+    shelfBooks.splice(shelfBooks.indexOf(b), 1); shelfBooks.splice(firstRead(shelfBooks), 0, b);
+    entries.splice(entries.indexOf(entry), 1); entries.splice(firstRead(entries), 0, entry);
+    const ribbon = el.querySelector(".ribbon");
+    if (ribbon) ribbon.remove();
+    el.setAttribute("aria-label", b.title + (b.author ? " by " + b.author : ""));
+    save(); updateCount(); showBook(b);
+    setNotice("Marked " + b.title + " as read.");
+
+    if (reduceMotion) {
+      readGroup.insertBefore(el, readGroup.firstChild);
+      shelf.scrollLeft = 0;
+      updateGroups();
+      return;
+    }
+    marking = true;
+    const width = el.style.width;
+
+    // A spacer holds the book's place in the pile and shrinks away
+    const spacer = document.createElement("div");
+    spacer.className = "book-spacer";
+    spacer.style.width = (el.offsetWidth + 6) + "px";
+    el.parentNode.insertBefore(spacer, el);
+
+    // The real book waits, invisible, at the front of the read side while a gap opens
+    el.classList.add("incoming");
+    el.style.width = "0px";
+    readGroup.insertBefore(el, readGroup.firstChild);
+
+    Object.assign(flyer.style, { left: start.left + "px", top: start.top + "px", transformOrigin: "bottom left" });
+    flyer.classList.add("flyer");
+    flyer.setAttribute("aria-hidden", "true");
+    flyer.tabIndex = -1;
+    document.body.appendChild(flyer);
+
+    // Where it lands: the start of the read books, once the shelf has scrolled back
+    const toLeft = readGroup.getBoundingClientRect().left + shelf.scrollLeft;
+    const toTop = el.getBoundingClientRect().top;
+    const dx = toLeft - start.left, dy = toTop - start.top;
+    shelf.scrollTo({ left: 0, behavior: "smooth" });
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      spacer.style.width = "0px";
+      el.style.width = width;
+      el.style.marginRight = "3px";
+    }));
+
+    const flag = flyer.querySelector(".ribbon");
+    if (flag) flag.animate([{ transform: "none", opacity: 1 }, { transform: "translateY(-18px)", opacity: 0 }],
+      { duration: 380, delay: 120, easing: "ease-in", fill: "forwards" });
+    await flyer.animate([
+      { transform: "translate(0,0) rotate(-12deg) scale(1)" },
+      { transform: "translate(0,-48px) rotate(0deg) scale(1.06)", offset: 0.28 },
+      { transform: "translate(" + dx * 0.55 + "px," + (Math.min(dy, 0) - 72) + "px) rotate(3deg) scale(1.06)", offset: 0.62 },
+      { transform: "translate(" + dx + "px," + (dy - 14) + "px) rotate(0deg) scale(1.01)", offset: 0.88 },
+      { transform: "translate(" + dx + "px," + dy + "px) rotate(0deg) scale(1)" }
+    ], { duration: 1100, easing: "cubic-bezier(.45,.05,.35,1)", fill: "forwards" }).finished;
+
+    flyer.remove();
+    spacer.remove();
+    el.classList.remove("incoming");
+    el.style.marginRight = "";
+    land(el, el.getBoundingClientRect(), b);
+    const after = entries.filter(x => x.b.status !== "Reading" && x !== entry && !x.el.classList.contains("is-hidden")).slice(0, 3);
+    after.forEach((n, i) => {
+      n.el.style.transformOrigin = "bottom right";
+      n.el.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(" + (3.5 - i) + "deg)" }, { transform: "rotate(0deg)" }],
+        { duration: 420, delay: 30 + i * 50, easing: "cubic-bezier(.3,.7,.4,1)" }).finished.then(() => { n.el.style.transformOrigin = ""; });
+    });
+    updateGroups();
+    marking = false;
+  }
+
+  // ---------- Add a book ----------
+  const dialog = $("addDialog"), form = $("addForm"), previewStage = $("previewStage"), previewNote = $("previewNote");
+  const titleIn = $("titleIn"), authorIn = $("authorIn"), titleHint = $("titleHint"), authorHint = $("authorHint"), categoryHint = $("categoryHint");
+  document.querySelectorAll("dialog [data-close]").forEach(b => b.addEventListener("click", () => b.closest("dialog").close()));
+
+  // Colour pickers
+  const custom = { color: false, color2: false };
+  const BASIC_COLOURS = [["White", "#F7F5EF"], ["Tan", "#D6B46A"], ["Red", "#C1272D"], ["Blue", "#2E5C9A"], ["Dark blue", "#15295E"]];
+  document.querySelectorAll(".swatches[data-group]").forEach(box => {
+    const g = box.dataset.group;
+    box.innerHTML = BASIC_COLOURS.map(([name, hex]) =>
+      '<label title="' + name + '"><input type="radio" name="' + g + '" value="' + hex + '" aria-label="' + name + '" data-optional><span style="--c:' + hex + '"></span></label>').join("") +
+      '<label class="picker" title="Pick any colour"><input type="color" data-custom="' + g + '" value="' + (g === "color" ? "#6B4E9B" : "#E3BE5C") + '" aria-label="Pick any colour"></label>';
+  });
+  const pickerOf = g => form.querySelector('[data-custom="' + g + '"]').parentElement;
+  form.querySelectorAll("input[data-custom]").forEach(inp => inp.addEventListener("input", () => {
+    const g = inp.dataset.custom;
+    form.querySelectorAll('input[name="' + g + '"]').forEach(r => { r.checked = false; r.dataset.was = ""; });
+    custom[g] = true;
+    pickerOf(g).classList.add("active");
+    renderPreview();
+  }));
+  form.querySelectorAll('input[name="color"], input[name="color2"]').forEach(r => r.addEventListener("change", () => {
+    custom[r.name] = false;
+    pickerOf(r.name).classList.remove("active");
+  }));
+  // Optional choices can be un-picked by clicking them again
+  form.querySelectorAll("input[data-optional]").forEach(r => r.addEventListener("click", () => {
+    if (r.dataset.was === "1") { r.checked = false; r.dataset.was = ""; renderPreview(); return; }
+    form.querySelectorAll('input[name="' + r.name + '"]').forEach(x => x.dataset.was = "");
+    r.dataset.was = "1";
+  }));
+
+  let randColor = SWATCHES[0][1], randThickness = "Medium", foundPages = 0;
+  function readForm() {
+    const f = new FormData(form);
+    const val = g => { const c = form.querySelector('input[name="' + g + '"]:checked'); return c ? c.value : custom[g] ? form.querySelector('[data-custom="' + g + '"]').value : ""; };
+    const spine = f.get("spine") || "Solid";
+    return {
+      title: str(f.get("title"), 120), author: str(f.get("author"), 80), category: f.get("category") || "",
+      status: formMode === "reading" ? "Reading" : "Read", note: f.get("note") || "",
+      thickness: f.get("thickness") || thicknessFromPages(foundPages) || randThickness,
+      size: f.get("size") || "Regular", spine,
+      color: val("color") || randColor, color2: spine === "Solid" ? "" : val("color2"),
+      pages: foundPages || ""
+    };
+  }
+  function renderPreview() {
+    const d = readForm();
+    const spine = d.spine;
+    $("color2Set").hidden = spine === "Solid";
+    $("color2Label").textContent = "Fades to";
+    const b = cleanBook({ ...d, title: d.title || "Book name", author: d.author || "Author", category: d.category || "Non-fiction" });
+    previewStage.replaceChildren(makeBookEl(b));
+
+  }
+  form.addEventListener("input", renderPreview);
+  // The note line grows as you type
+  const noteIn = $("noteIn");
+  const fitNote = () => { noteIn.style.height = "auto"; noteIn.style.height = noteIn.scrollHeight + "px"; };
+  noteIn.addEventListener("input", fitNote);
+  form.addEventListener("change", renderPreview);
+
+  function setHint(el, content, kind) {
+    el.className = "hint" + (kind ? " " + kind : "");
+    const parts = [].concat(content || []);
+    el.replaceChildren(...parts.map(p => typeof p === "string" ? document.createTextNode(p) : p));
+    el.hidden = !parts.length;
+  }
+  const hintBtn = (text, fn) => { const x = document.createElement("button"); x.type = "button"; x.textContent = text; x.addEventListener("click", fn); return x; };
+
+  // Author lookup: fills in the author (and category) from the book name; the person confirms.
+  let lookupCtl = null, lastLookup = "", authorState = "empty", categoryTouched = false;
+  function confirmAuthor() { authorState = "confirmed"; authorIn.classList.remove("suggested"); setHint(authorHint, "Great, thanks!", "ok"); }
+  authorIn.addEventListener("input", () => { authorState = authorIn.value.trim() ? "typed" : "empty"; authorIn.classList.remove("suggested"); setHint(authorHint, null); });
+  form.querySelectorAll('input[name="category"]').forEach(r => r.addEventListener("change", () => { categoryTouched = true; setHint(categoryHint, null); }));
+  titleIn.addEventListener("input", () => setHint(titleHint, null));
+  titleIn.addEventListener("change", () => { titleIn.value = tidyCase(titleIn.value, true); renderPreview(); });
+  authorIn.addEventListener("change", () => { authorIn.value = tidyCase(authorIn.value, false); renderPreview(); });
+  titleIn.addEventListener("change", runLookup);
+
+  async function runLookup() {
+    const t = titleIn.value.trim();
+    if (!t || t === lastLookup) return;
+    lastLookup = t;
+    if (lookupCtl) lookupCtl.abort();
+    const ctl = lookupCtl = new AbortController();
+    const wantAuthor = authorState === "empty" || authorState === "suggested";
+    if (wantAuthor) setHint(authorHint, "Looking up the author…");
+    try {
+      const r = await lookupBook(t, ctl.signal);
+      if (ctl !== lookupCtl || titleIn.value.trim() !== t) return;
+      foundPages = r ? r.pages : 0;
+      if (wantAuthor && (authorState === "empty" || authorState === "suggested")) {
+        if (r && r.author) {
+          authorIn.value = r.author;
+          authorIn.classList.add("suggested");
+          authorState = "suggested";
+          setHint(authorHint, ["Is this the right author?", hintBtn("Yes", confirmAuthor), "or just type over it."]);
+        } else setHint(authorHint, "We couldn't find this one. Type the author in.");
+      }
+      if (r && r.category && !categoryTouched) {
+        form.querySelector('input[name="category"][value="' + r.category + '"]').checked = true;
+        setHint(categoryHint, "We guessed this from the book. Change it if it's off.");
+      }
+      // Same title in different capitals: just tidy it up. A different title: ask.
+      if (r && r.title && r.title !== t && r.title.toLowerCase() === t.toLowerCase()) {
+        titleIn.value = r.title;
+        lastLookup = r.title;
+      } else if (r && r.title && r.title.toLowerCase() !== t.toLowerCase()) {
+        setHint(titleHint, ["Did you mean", hintBtn(r.title, () => { titleIn.value = r.title; lastLookup = r.title; setHint(titleHint, null); renderPreview(); })]);
+      }
+      renderPreview();
+    } catch (err) {
+      if (err && err.name === "AbortError") return;
+      if (wantAuthor) setHint(authorHint, "Couldn't look up the author right now. Type it in.");
+    }
+  }
+
+  const MAX_READING = 3;
+  const readingCount = () => shelfBooks.filter(b => b.status === "Reading").length;
+  const tooManyReading = () => setNotice("You're already reading " + MAX_READING + " books. Mark one as read to start another.", { error: true });
+  let formMode = "read";
+  // Both buttons open the same form: books you've read, or the one you're reading now (gets a bookmark).
+  let editTarget = null;
+  function openAdd(mode, isEdit) {
+    if (!isEdit && mode === "reading" && readingCount() >= MAX_READING) return tooManyReading();
+    editTarget = null;
+    formMode = mode;
+    $("addTitle").textContent = mode === "reading" ? "What are you reading now?" : "Which book did you read?";
+    $("addSubmit").textContent = "Add to my shelf";
+    $("bulkLink").hidden = mode === "reading";
+    $("design").open = false;
+    form.reset();
+    form.querySelectorAll("input[data-optional]").forEach(x => x.dataset.was = "");
+    custom.color = custom.color2 = false; pickerOf("color").classList.remove("active"); pickerOf("color2").classList.remove("active"); categoryTouched = false; authorState = "empty"; lastLookup = ""; foundPages = 0;
+    if (lookupCtl) lookupCtl.abort();
+    authorIn.classList.remove("suggested");
+    [titleHint, authorHint, categoryHint].forEach(h => setHint(h, null));
+    randColor = pick(SWATCHES)[1];
+    randThickness = pick(["Thin", "Medium", "Medium", "Thick"]);
+    renderPreview();
+    setNotice("");
+    dialog.showModal();
+  }
+  // Edit: the same form, filled in with the book
+  function openEdit(entry) {
+    const b = entry.b;
+    openAdd(b.status === "Reading" ? "reading" : "read", true);
+    editTarget = b;
+    $("addTitle").textContent = "Edit book";
+    $("addSubmit").textContent = "Save changes";
+    $("bulkLink").hidden = true;
+    titleIn.value = b.title; authorIn.value = b.author; noteIn.value = b.note || "";
+    authorState = "confirmed"; categoryTouched = true; lastLookup = b.title;
+    foundPages = parseInt(b.pages, 10) || 0;
+    const check = (name, value) => { const r = form.querySelector('input[name="' + name + '"][value="' + value + '"]'); if (r) { r.checked = true; r.dataset.was = "1"; } return !!r; };
+    check("category", b.category);
+    check("thickness", b.thickness);
+    check("size", b.size);
+    check("spine", b.spine === "Gradient" ? "Gradient" : "Solid");
+    const setColour = (g, hex) => {
+      if (!hex) return;
+      if (!check(g, hex.toUpperCase())) {
+        const inp = form.querySelector('[data-custom="' + g + '"]');
+        inp.value = hex.toLowerCase(); custom[g] = true; pickerOf(g).classList.add("active");
+      }
+    };
+    setColour("color", b.color);
+    if (b.spine === "Gradient") setColour("color2", b.color2);
+    $("design").open = true;
+    renderPreview();
+    fitNote();
+  }
+  $("plusRead").addEventListener("click", () => openAdd("read"));
+  $("bulkLink").addEventListener("click", () => { dialog.close(); openUpload(); });
+  $("plusReading").addEventListener("click", () => openAdd("reading"));
+  $("ghostReading").addEventListener("click", () => openAdd("reading"));
+  $("ghostRead").addEventListener("click", () => openAdd("read"));
+  dialog.addEventListener("close", () => { noteIn.style.height = ""; });
+
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    titleIn.value = tidyCase(titleIn.value, true); authorIn.value = tidyCase(authorIn.value, false);
+    if (!form.reportValidity()) return;
+    if (authorState === "suggested") {
+      setHint(authorHint, ["Just checking, is this the right author?", hintBtn("Yes, that's right", confirmAuthor), "or type over it."], "error");
+      authorHint.querySelector("button").focus();
+      return;
+    }
+    if (editTarget) return saveEdit();
+    const b = cleanBook(readForm());
+    const fromRect = previewStage.firstElementChild.getBoundingClientRect();
+    dialog.close();
+    if (!$("tableView").hidden) return addFromTable(b);
+    const entry = placeNewBook(b, { incoming: true });
+    save();
+    flyIn(entry, fromRect);
+  });
+
+  function saveEdit() {
+    const old = editTarget;
+    editTarget = null;
+    const patch = readForm();
+    patch.status = old.status;
+    if (!patch.pages) delete patch.pages;
+    // Books with bands keep them unless a style was picked in the form
+    if (old.spine === "Bands" && patch.spine === "Solid") { patch.spine = "Bands"; if (!custom.color2 && !form.querySelector('input[name="color2"]:checked')) patch.color2 = old.color2; }
+    dialog.close();
+    const next = updateBook(old, patch);
+    const entry = entries.find(e => e.b === next);
+    if (entry) {
+      select(entry);
+      if (!reduceMotion) land(entry.el, entry.el.getBoundingClientRect(), next);
+    }
+    if (!$("tableView").hidden) renderTable();
+    setNotice("Saved your changes to " + next.title + ".");
+  }
+
+  // The new book lifts out of the form, flies over to a gap that opens at the end
+  // of the shelf, lands with a little bounce and nudges its neighbours.
+  async function flyIn(entry, fromRect) {
+    const { b, el } = entry;
+    emptyEl.hidden = true;
+    updateGroups();
+    if (!matches(b)) { selectFilter(filterBtns[0]); await wait(reduceMotion ? 0 : 500); }
+    const finalWidth = el.dataset.width;
+    const done = () => { updateCount(); updateArrows(); updateEditUI(); switchEl.hidden = false; movePill(switchEl.querySelector('[aria-pressed="true"]')); showBook(b); setNotice("Added " + b.title + " to your shelf."); };
+    const reading = b.status === "Reading";
+    if (reduceMotion) { el.classList.remove("incoming"); el.style.width = finalWidth; if (!reading) shelf.scrollLeft = 0; return done(); }
+
+    const flyer = makeBookEl(b);
+    flyer.classList.add("flyer");
+    flyer.setAttribute("aria-hidden", "true");
+    flyer.tabIndex = -1;
+    Object.assign(flyer.style, { left: fromRect.left + "px", top: fromRect.top + "px" });
+    if (reading) flyer.style.transformOrigin = "bottom left";
+    document.body.appendChild(flyer);
+    flyer.animate([{ transform: "none" }, { transform: "translateY(-14px) rotate(-4deg) scale(1.05)" }], { duration: 380, easing: "cubic-bezier(.2,.8,.3,1)", fill: "forwards" });
+
+    requestAnimationFrame(() => requestAnimationFrame(() => { el.style.width = finalWidth; el.style.marginRight = "3px"; }));
+    await wait(470);
+    if (!reading && shelf.scrollLeft > 0) { shelf.scrollTo({ left: 0, behavior: "smooth" }); await wait(450); }
+
+    // Measure where the book stands before its lean, so the flight ends exactly in place.
+    el.style.transform = "none";
+    const to = el.getBoundingClientRect();
+    el.style.transform = "";
+    const dx = to.left - fromRect.left, dy = to.top - fromRect.top, arcY = Math.min(0, dy) - 110;
+    await flyer.animate([
+      { transform: "translateY(-14px) rotate(-4deg) scale(1.05)" },
+      { transform: "translate(" + dx * 0.55 + "px," + arcY + "px) rotate(-16deg) scale(1.08)", offset: 0.5 },
+      { transform: "translate(" + dx + "px," + (dy - 26) + "px) rotate(4deg) scale(1.01)", offset: 0.86 },
+      { transform: "translate(" + dx + "px," + dy + "px) rotate(" + (reading ? -12 : 0) + "deg) scale(1)" }
+    ], { duration: 820, easing: "cubic-bezier(.45,.05,.35,1)", fill: "forwards" }).finished;
+
+    flyer.remove();
+    el.classList.remove("incoming");
+    el.style.marginRight = "";
+    land(el, to, b);
+    // The books next to it get nudged: the pile leans back, read books rock to the right
+    const same = entries.filter(x => x.b.status === b.status && !x.el.classList.contains("is-hidden"));
+    const k = same.indexOf(entry);
+    const neighbours = reading ? same.slice(Math.max(0, k - 3), k).reverse() : same.slice(k + 1, k + 4);
+    neighbours.forEach((n, i) => {
+      const t = tiltOf(n.b);
+      const deg = reading ? (-4 + i * 1.2) : (4 - i * 1.2);
+      n.el.style.transformOrigin = reading ? "bottom left" : "bottom right";
+      n.el.animate([{ transform: t + "rotate(0deg)" }, { transform: t + "rotate(" + deg + "deg)" }, { transform: t + "rotate(0deg)" }],
+        { duration: 460, delay: 40 + i * 50, easing: "cubic-bezier(.3,.7,.4,1)" }).finished.then(() => { n.el.style.transformOrigin = ""; });
+    });
+    done();
+  }
+  function land(el, rect, b) {
+    const t = b ? tiltOf(b) : "";
+    el.animate([{ transform: t + "scale(1.05, .9)" }, { transform: t + "scale(.98, 1.04)", offset: 0.45 }, { transform: t + "scale(1)" }], { duration: 360, easing: "ease-out" });
+    plank.animate([{ transform: "none" }, { transform: "translateY(2px)" }, { transform: "none" }], { duration: 200 });
+    const s = shelfBox.getBoundingClientRect();
+    const baseX = rect.left + rect.width / 2 - s.left, baseY = rect.bottom - s.top;
+    for (let i = 0; i < 9; i++) {
+      const d = document.createElement("span");
+      d.className = "dust";
+      d.style.left = (baseX - 3) + "px"; d.style.top = (baseY - 6) + "px";
+      shelfBox.appendChild(d);
+      const x = (i % 2 ? 1 : -1) * (rect.width / 2 + 6 + Math.random() * 30), y = -(4 + Math.random() * 18);
+      d.animate([{ transform: "translate(0,0) scale(1)", opacity: .75 }, { transform: "translate(" + x + "px," + y + "px) scale(.25)", opacity: 0 }],
+        { duration: 520 + Math.random() * 200, easing: "cubic-bezier(.2,.8,.4,1)" }).finished.then(() => d.remove());
+    }
+  }
+
+  // ---------- Upload a list ----------
+  const upDialog = $("uploadDialog"), fileIn = $("fileIn"), drop = $("drop"), summary = $("importSummary"), importBtn = $("importBtn"), progress = $("importProgress");
+  let pending = null;
+  function openUpload() {
+    pending = null; fileIn.value = ""; summary.hidden = true; $("importMode").hidden = true; importBtn.textContent = "Add to my shelf";
+    importBtn.disabled = true; progress.textContent = "";
+    upDialog.showModal();
+  }
+  fileIn.addEventListener("change", () => fileIn.files[0] && readFile(fileIn.files[0]));
+  ["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add("over"); }));
+  ["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove("over"); }));
+  drop.addEventListener("drop", e => { const f = e.dataTransfer.files[0]; if (f) readFile(f); });
+
+  async function readFile(file) {
+    summary.hidden = false;
+    importBtn.disabled = true;
+    try {
+      if (file.size > 2e6) throw new Error("too-big");
+      const rows = parseCSV(await file.text());
+      if (!rows.length) throw new Error("empty");
+      const header = rows[0].map(h => h.replace(/\(.*?\)/g, "").trim().toLowerCase());
+      const missingCols = ["title", "author", "category"].filter(k => !ALIASES[k].some(n => header.includes(n)));
+      if (missingCols.length) throw new Error("columns:" + missingCols.join(", "));
+      const recs = rowsToRecords(rows);
+      if (!recs.length) throw new Error("empty");
+      const seen = new Set(), unique = [];
+      for (const r of recs) { const k = r.title.toLowerCase().trim(); if (!seen.has(k)) { seen.add(k); unique.push(r); } }
+      const complete = unique.filter(r => r.author && normCategory(r.category));
+      const incomplete = unique.filter(r => !complete.includes(r));
+      pending = complete.slice(0, 500);
+      summary.innerHTML = "<p><strong></strong></p><ul></ul>";
+      summary.querySelector("strong").textContent = pending.length
+        ? "Found " + pending.length + " book" + (pending.length === 1 ? "" : "s") + " in " + file.name + "."
+        : "None of the books in " + file.name + " can be added yet.";
+      const notes = [];
+      if (incomplete.length) {
+        const names = incomplete.slice(0, 5).map(r => r.title).join(", ") + (incomplete.length > 5 ? " and " + (incomplete.length - 5) + " more" : "");
+        notes.push(incomplete.length + (incomplete.length === 1 ? " book is" : " books are") + " missing an author or a category (Fiction or Non-fiction), so " +
+          (incomplete.length === 1 ? "it" : "they") + " won't be added: " + names + ". Fill these in and upload the file again.");
+      }
+      if (recs.length > unique.length) notes.push((recs.length - unique.length) + " repeated title" + (recs.length - unique.length === 1 ? " was" : "s were") + " skipped.");
+      if (pending.length) notes.push("Thickness, size and colours left empty are picked at random. All of these are added as read.");
+      summary.querySelector("ul").innerHTML = notes.map(() => "<li></li>").join("");
+      summary.querySelectorAll("li").forEach((li, i) => li.textContent = notes[i]);
+      $("importMode").hidden = !shelfBooks.length || !pending.length;
+      importBtn.textContent = "Add to my shelf";
+      importBtn.disabled = !pending.length;
+    } catch (err) {
+      pending = null;
+      summary.innerHTML = "<p></p>";
+      summary.firstChild.textContent = err.message === "no-title"
+        ? "This file has no column for the book name. Add a column called \"title\" or \"book name\" and try again."
+        : err.message.startsWith("columns:") ? "This file needs a column for each of title, author and category. Missing: " + err.message.slice(8) + "."
+        : err.message === "too-big" ? "This file is too large. Upload a CSV under 2 MB."
+        : "No books found in this file. Check that it's a CSV with a header row.";
+      summary.firstChild.className = "hint error";
+    }
+  }
+
+  importBtn.addEventListener("click", async () => {
+    if (!pending) return;
+    importBtn.disabled = true;
+    const replace = !$("importMode").hidden && form.ownerDocument.querySelector('input[name="mode"]:checked').value === "replace";
+    const existing = new Set((replace ? [] : shelfBooks).map(b => b.title.toLowerCase()));
+    const toAdd = pending.filter(r => !existing.has(r.title.toLowerCase()));
+    const skipped = pending.length - toAdd.length;
+    const books = toAdd.map(r => cleanBook({ ...r, status: "Read" }));
+    upDialog.close();
+    if (replace) await clearShelf();
+    if (currentFilter !== "all") { selectFilter(filterBtns[0]); await wait(reduceMotion ? 0 : 450); }
+    shelfBooks.push(...books);
+    save();
+    await cascadeIn(books);
+    setNotice("Your books are on the shelf." + (skipped ? " " + skipped + (skipped === 1 ? " was" : " were") + " already there, so " + (skipped === 1 ? "it was" : "they were") + " skipped." : ""));
+  });
+
+  async function clearShelf() {
+    clearSelection();
+    const old = entries.splice(0);
+    shelfBooks = [];
+    old.forEach((e, i) => { e.el.style.setProperty("--delay", (i * 0.015) + "s"); e.el.classList.add("is-hidden"); });
+    await wait(reduceMotion ? 0 : 650 + old.length * 15);
+    old.forEach(e => e.el.remove());
+  }
+
+  // Bulk upload: the books rain down onto the shelf one after another.
+  async function cascadeIn(books) {
+    emptyEl.hidden = true;
+    const added = books.map(b => addEntry(b, { incoming: true }));
+    if (reduceMotion) {
+      added.forEach(({ el }) => { el.classList.remove("incoming"); el.style.width = el.dataset.width; });
+      refresh(); return;
+    }
+    shelf.scrollTo({ left: shelf.scrollWidth, behavior: "smooth" });
+    for (let i = 0; i < added.length; i++) {
+      const { el } = added[i];
+      el.style.width = el.dataset.width;
+      el.style.marginRight = "3px";
+      el.classList.remove("incoming");
+      el.style.visibility = "visible";
+      el.animate([
+        { transform: "translateY(-340px) rotate(" + (i % 2 ? 8 : -8) + "deg)", opacity: 0 },
+        { transform: "translateY(-340px) rotate(" + (i % 2 ? 8 : -8) + "deg)", opacity: 1, offset: 0.05 },
+        { transform: "translateY(6px) rotate(0deg)", offset: 0.78 },
+        { transform: "translateY(-6px)", offset: 0.9 },
+        { transform: "none" }
+      ], { duration: 620, easing: "cubic-bezier(.5,0,.6,1)" }).finished.then(() => { el.style.visibility = ""; el.style.marginRight = ""; });
+      if (i % 3 === 0) shelf.scrollTo({ left: shelf.scrollWidth, behavior: "smooth" });
+      await wait(Math.max(40, 140 - added.length * 2));
+    }
+    await wait(650);
+    refresh();
+  }
+
+  // ---------- Lamp: day (sage wall) or night (night library) ----------
+  const root = document.documentElement, lamp = $("lamp");
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+  const isNight = () => root.dataset.theme ? root.dataset.theme === "dark" : darkQuery.matches;
+  function showLampState() {
+    const night = isNight();
+    root.classList.toggle("lamp-on", night);
+    lamp.setAttribute("aria-pressed", String(night));
+    lamp.setAttribute("aria-label", night ? "Pull the lamp cord to turn off night mode" : "Pull the lamp cord to turn on night mode");
+  }
+  lamp.addEventListener("click", () => {
+    const next = isNight() ? "light" : "dark";
+    if (!reduceMotion) {
+      lamp.classList.remove("pulling");
+      void lamp.offsetWidth;
+      lamp.classList.add("pulling");
+    }
+    const flip = () => { root.dataset.theme = next; showLampState(); };
+    // The cord goes down first, then the room changes
+    setTimeout(() => {
+      if (document.startViewTransition && !reduceMotion) document.startViewTransition(flip); else flip();
+      writeStore({ theme: next });
+    }, reduceMotion ? 0 : 180);
+  });
+  lamp.addEventListener("animationend", e => { if (e.target === lamp) lamp.classList.remove("pulling"); });
+  darkQuery.addEventListener("change", showLampState);
+  showLampState();
+
+  // ---------- Menu and views ----------
+  const menuBtn = $("menuBtn"), menuList = $("menuList");
+  function updateProfile() {
+    const name = readStore().name || "";
+    $("avatarLetter").textContent = name ? name[0].toUpperCase() : "";
+    $("avatarBook").style.display = name ? "none" : "";
+    const hello = $("menuHello");
+    hello.hidden = false;
+    if (name) hello.textContent = "Hi " + name + "!";
+    else {
+      // No name yet: a line to add one, right in the menu
+      hello.innerHTML = '<input type="text" class="menu-name" id="menuNameIn" maxlength="40" placeholder="Add your name" aria-label="Add your name, then press Enter" autocomplete="given-name" enterkeyhint="done">';
+      $("menuNameIn").addEventListener("keydown", e => {
+        if (e.key !== "Enter") return;
+        e.preventDefault();
+        const v = tidyCase(e.target.value, false).slice(0, 40);
+        if (!v) return;
+        writeStore({ name: v });
+        updateProfile();
+        refresh();
+        setNotice("Nice to meet you, " + v + "!");
+      });
+    }
+    menuBtn.setAttribute("aria-label", name ? "Profile menu for " + name : "Profile menu");
+  }
+  function setMenu(open) {
+    menuBtn.setAttribute("aria-expanded", String(open));
+    menuList.hidden = !open;
+    if (open) { updateProfile(); menuList.querySelector("a").focus(); }
+  }
+  menuBtn.addEventListener("click", () => setMenu(menuList.hidden));
+  document.addEventListener("click", e => { if (!menuList.hidden && !e.target.closest(".menu")) setMenu(false); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !menuList.hidden) { setMenu(false); menuBtn.focus(); } });
+  menuList.addEventListener("click", e => {
+    const a = e.target.closest("a");
+    if (!a) return;
+    e.preventDefault();
+    setMenu(false);
+    if (a.dataset.action === "upload") return openUpload();
+    history.pushState(null, "", a.dataset.view === "table" ? "#all-books" : location.pathname + location.search);
+    route();
+  });
+  $("tableEmpty").querySelector("a").addEventListener("click", e => {
+    e.preventDefault();
+    history.pushState(null, "", location.pathname + location.search);
+    route();
+  });
+
+  function route() {
+    const table = location.hash === "#all-books" || location.hash === "#my-shelf";
+    $("shelfView").hidden = table;
+    document.querySelector("main").classList.toggle("wide", table);
+    $("tableView").hidden = !table;
+    menuList.querySelectorAll("a").forEach(a => {
+      if ((a.dataset.view === "table") === table) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    });
+    if (table) renderTable();
+    else { movePill(switchEl.querySelector('[aria-pressed="true"]')); updateArrows(); }
+  }
+  window.addEventListener("popstate", route);
+
+  // My shelf: every book in a sortable table
+  const ORDER = { Thin: 1, Medium: 2, Thick: 3, Small: 1, Regular: 2, Tall: 3 };
+  const COLUMNS = [
+    { key: "n", label: "#", cls: "num", value: (b, i) => i + 1 },
+    { key: "title", label: "Title", cls: "t" },
+    { key: "author", label: "Author", cls: "au" },
+    { key: "category", label: "Category", cls: "nowrap" },
+    { key: "status", label: "Status", cls: "nowrap" },
+    { key: "note", label: "About the book", cls: "about" },
+    { key: "thickness", label: "Thickness", sort: b => ORDER[b.thickness] },
+    { key: "size", label: "Size", sort: b => ORDER[b.size] },
+    { key: "spine", label: "Spine", cls: "nowrap" }
+  ];
+  let sortKey = "n", sortDir = 1, tableFilter = "all";
+  const tableSwitch = $("tableSwitch"), tablePill = tableSwitch.querySelector(".pill");
+  const tableBtns = [...tableSwitch.querySelectorAll("button")];
+  const moveTablePill = btn => { tablePill.style.width = btn.offsetWidth + "px"; tablePill.style.transform = "translateX(" + btn.offsetLeft + "px)"; };
+  const tableBooks = () => shelfBooks.filter(b => tableFilter === "all" || b.category === tableFilter);
+  tableBtns.forEach(btn => btn.addEventListener("click", () => {
+    tableBtns.forEach(x => x.setAttribute("aria-pressed", String(x === btn)));
+    moveTablePill(btn);
+    tableFilter = btn.dataset.filter;
+    renderTable();
+    $("tableBody").animate([{ opacity: 0, transform: "translateY(6px)" }, { opacity: 1, transform: "none" }], { duration: reduceMotion ? 0 : 260, easing: "ease-out" });
+  }));
+  $("tableDownload").addEventListener("click", () => {
+    const name = tableFilter === "all" ? "books.csv" : "books-" + tableFilter.toLowerCase() + ".csv";
+    download(name, toCSV(tableBooks()));
+  });
+  $("tableAdd").addEventListener("click", () => openAdd("read"));
+  $("tableUpload").addEventListener("click", () => openUpload());
+  function addFromTable(b) {
+    if (tableFilter !== "all" && b.category !== tableFilter) tableBtns[0].click();
+    placeNewBook(b);
+    save({ quiet: true });
+    updateCount();
+    renderTable();
+    const tr = rowFor.get(b);
+    if (tr) {
+      const r = tr.getBoundingClientRect();
+      if (r.bottom > window.innerHeight || r.top < 0) window.scrollBy({ top: r.top - window.innerHeight / 2, behavior: reduceMotion ? "auto" : "smooth" });
+      tr.classList.add("flash");
+    }
+    setNotice("Added " + b.title + " to your shelf.");
+  }
+
+  const rowFor = new Map();
+  const OPTIONS = {
+    category: [["Fiction", "Fiction"], ["Non-fiction", "Non-fiction"]],
+    status: [["Read", "Read"], ["Reading", "Reading"]],
+    thickness: [["Thin", "Thin"], ["Medium", "Medium"], ["Thick", "Thick"]],
+    size: [["Small", "Small"], ["Regular", "Regular"], ["Tall", "Tall"]],
+    spine: [["Solid", "Solid"], ["Gradient", "Gradient"], ["Bands", "Bands"]]
+  };
+  const spineBackground = b => b.spine === "Gradient" ? "linear-gradient(180deg, " + b.color + ", " + b.color2 + ")" : b.color;
+  const fitText = t => { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; };
+
+  function textCell(row, key, label, required) {
+    const t = document.createElement("textarea");
+    t.className = "cell-text";
+    t.rows = 1;
+    t.value = row.b[key] || "";
+    t.setAttribute("aria-label", label + " of " + (row.b.title || "book"));
+    if (!required) t.placeholder = "Add a note";
+    t.addEventListener("input", () => fitText(t));
+    t.addEventListener("keydown", e => {
+      if (e.key === "Enter") { e.preventDefault(); t.blur(); }
+      if (e.key === "Escape") { t.value = row.b[key] || ""; fitText(t); t.blur(); }
+    });
+    t.addEventListener("change", () => {
+      const v = key === "note" ? t.value.replace(/\s+/g, " ").trim() : tidyCase(t.value, key === "title");
+      if (required && !v) {
+        t.value = row.b[key]; fitText(t);
+        setNotice("A book needs " + (key === "title" ? "a title." : "an author."), { error: true });
+        return;
+      }
+      if (v === (row.b[key] || "")) return;
+      row.b = updateBook(row.b, { [key]: v });
+      t.value = row.b[key];
+      setNotice("Saved.");
+    });
+    return t;
+  }
+  function selectCell(row, key, label, onSaved) {
+    const sel = document.createElement("select");
+    sel.className = "cell-select";
+    sel.setAttribute("aria-label", label + " of " + row.b.title);
+    OPTIONS[key].forEach(([v, text]) => sel.add(new Option(text, v, false, row.b[key] === v)));
+    sel.addEventListener("change", () => {
+      if (key === "status" && sel.value === "Reading" && row.b.status !== "Reading" && readingCount() >= MAX_READING) {
+        sel.value = row.b.status;
+        return tooManyReading();
+      }
+      row.b = updateBook(row.b, { [key]: sel.value });
+      if (onSaved) onSaved();
+      setNotice("Saved.");
+    });
+    return sel;
+  }
+
+  function renderTable() {
+    const list = tableBooks().map((b, i) => ({ b, i }));
+    const col = COLUMNS.find(c => c.key === sortKey);
+    const keyOf = ({ b, i }) => col.key === "n" ? i : col.sort ? col.sort(b) : String(b[col.key] || "").toLowerCase();
+    list.sort((x, y) => { const a = keyOf(x), c = keyOf(y); return (a > c ? 1 : a < c ? -1 : x.i - y.i) * sortDir; });
+    const cols = editing ? [...COLUMNS, { key: "del", label: "Remove", cls: "del" }] : COLUMNS;
+
+    const head = $("tableHead");
+    head.replaceChildren(...cols.map(c => {
+      const th = document.createElement("th");
+      th.scope = "col";
+      if (c.key === "del") { th.innerHTML = '<span class="sr-only">Remove</span>'; return th; }
+      if (c.key === sortKey) th.setAttribute("aria-sort", sortDir > 0 ? "ascending" : "descending");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = c.label;
+      btn.addEventListener("click", () => {
+        if (sortKey === c.key) sortDir = -sortDir; else { sortKey = c.key; sortDir = 1; }
+        renderTable();
+        head.querySelector('[aria-sort] button').focus();
+      });
+      th.appendChild(btn);
+      return th;
+    }));
+
+    rowFor.clear();
+    const body = $("tableBody");
+    body.replaceChildren(...list.map(({ b, i }) => {
+      const tr = document.createElement("tr");
+      const row = { b };
+      rowFor.set(b, tr);
+      cols.forEach(c => {
+        const td = document.createElement("td");
+        if (c.cls) td.className = c.cls;
+        if (c.key === "n") td.textContent = i + 1;
+        else if (!editing) {
+          // Read-only view for visitors
+          if (c.key === "status") {
+            const t = document.createElement("span");
+            t.className = "tag" + (b.status === "Reading" ? " reading" : "");
+            t.textContent = b.status === "Reading" ? "Currently reading" : "Read";
+            td.appendChild(t);
+          } else if (c.key === "spine") {
+            const sw = document.createElement("span");
+            sw.className = "mini-spine";
+            sw.style.background = spineBackground(b);
+            if (b.spine === "Bands") sw.style.boxShadow = "inset 0 3px 0 " + b.color2 + ", inset 0 -3px 0 " + b.color2 + ", inset 0 0 0 1px rgba(0,0,0,.15)";
+            td.append(sw, b.spine === "Bands" ? "With bands" : b.spine);
+          } else td.textContent = b[c.key] || (c.key === "note" ? "" : "\u2014");
+        } else if (c.key === "title" || c.key === "author" || c.key === "note") {
+          td.appendChild(textCell(row, c.key, c.label, c.key !== "note"));
+        } else if (c.key === "status") {
+          const wrap = document.createElement("div");
+          wrap.className = "status-cell";
+          const flag = document.createElement("span");
+          flag.className = "flag";
+          flag.hidden = b.status !== "Reading";
+          wrap.append(flag, selectCell(row, "status", "Status", () => { flag.hidden = row.b.status !== "Reading"; }));
+          td.appendChild(wrap);
+        } else if (c.key === "spine") {
+          const wrap = document.createElement("div");
+          wrap.className = "spine-cell";
+          const pick = document.createElement("label");
+          pick.className = "swatch-pick";
+          pick.title = "Change the spine colour";
+          const sw = document.createElement("span");
+          sw.className = "mini-spine";
+          const paint = () => {
+            sw.style.background = spineBackground(row.b);
+            sw.style.boxShadow = row.b.spine === "Bands" ? "inset 0 3px 0 " + row.b.color2 + ", inset 0 -3px 0 " + row.b.color2 + ", inset 0 0 0 1px rgba(0,0,0,.15)" : "";
+          };
+          paint();
+          const inp = document.createElement("input");
+          inp.type = "color";
+          inp.value = b.color.toLowerCase();
+          inp.setAttribute("aria-label", "Spine colour of " + b.title);
+          inp.addEventListener("change", () => { row.b = updateBook(row.b, { color: inp.value }); paint(); setNotice("Saved."); });
+          pick.append(sw, inp);
+          wrap.append(pick, selectCell(row, "spine", "Spine style", paint));
+          td.appendChild(wrap);
+        } else if (c.key === "del") {
+          const del = document.createElement("button");
+          del.type = "button";
+          del.className = "del-btn";
+          del.textContent = "\u2715";
+          del.setAttribute("aria-label", "Remove " + b.title);
+          del.title = "Remove from shelf";
+          del.addEventListener("click", () => {
+            const entry = entries.find(e => e.b === row.b);
+            if (entry) removeBook(entry);
+          });
+          td.appendChild(del);
+        } else {
+          td.appendChild(selectCell(row, c.key, c.label));
+        }
+        tr.appendChild(td);
+      });
+      return tr;
+    }));
+    body.querySelectorAll(".cell-text").forEach(fitText);
+
+    updateTableSummary();
+    $("tableHint").hidden = !editing || !shelfBooks.length;
+    $("tableAdd").hidden = !editing;
+    $("tableUpload").hidden = !editing;
+    moveTablePill(tableSwitch.querySelector('[aria-pressed="true"]'));
+  }
+  function updateTableSummary() {
+    const shown = tableBooks();
+    const reading = shown.filter(b => b.status === "Reading").length;
+    const fiction = shelfBooks.filter(b => b.category === "Fiction").length;
+    const word = n => n + (n === 1 ? " book" : " books");
+    $("tableCount").textContent = !shelfBooks.length ? ""
+      : tableFilter === "all"
+        ? word(shelfBooks.length) + ": " + fiction + " fiction, " + (shelfBooks.length - fiction) + " non-fiction" + (reading ? ". " + reading + " currently reading." : ".")
+        : shown.length + " of your " + word(shelfBooks.length) + " " + (shown.length === 1 ? "is " : "are ") + tableFilter.toLowerCase() + (reading ? ", " + reading + " currently reading." : ".");
+    $("booksTable").parentElement.hidden = !shelfBooks.length;
+    tableSwitch.parentElement.hidden = !shelfBooks.length && !editing;
+    tableSwitch.hidden = !shelfBooks.length;
+    $("tableDownload").hidden = !shelfBooks.length;
+    $("tableDownload").disabled = !shown.length;
+    $("tableEmpty").hidden = shelfBooks.length > 0;
+  }
+
+  // ---------- Start ----------
+  async function loadPublished() {
+    try {
+      const res = await fetch(BOOKS_FILE, { cache: "no-cache" });
+      if (!res.ok) return null;
+      return rowsToRecords(parseCSV(await res.text())).map(cleanBook);
+    } catch { return null; }
+  }
+  (async () => {
+    movePill(filterBtns[0]);
+    published = await loadPublished();
+    const stored = readStore();
+    const local = Array.isArray(stored.books) ? stored.books.map(cleanBook) : null;
+    const hasPublished = !!(published && published.length), hasLocal = !!(local && local.length);
+    // A brand-new shelf opens ready for the first books.
+    editing = !!stored.editing || new URLSearchParams(location.search).has("edit") || (!hasPublished && !hasLocal);
+    if (editing) writeStore({ editing: true });
+    // Visitors see the published file; whoever is editing sees their own working copy.
+    renderShelf(editing ? (local || published || []) : (hasPublished ? published : local || []));
+    if (editing && !local) save();
+    updateProfile();
+    route();
+  })();
+})();
+</script>
+</body>
+</html>

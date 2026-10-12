@@ -1,0 +1,4 @@
+title (required),author (required),category (required: Fiction or Non-fiction),thickness (optional: Thin / Medium / Thick),size (optional: Small / Regular / Tall),spine (optional: Solid / Gradient),color (optional: a colour name or #hex),color2 (optional: colour a gradient fades to),note (optional: a favourite line)
+Atomic Habits,James Clear,Non-fiction,Medium,Regular,Solid,white,,Small habits add up over time.
+Kane and Abel,Jeffrey Archer,Fiction,Thick,Regular,Gradient,blue,navy,
+The Alchemist,Paulo Coelho,Fiction,,,,,,
