@@ -945,6 +945,7 @@
       $("plusReading").classList.toggle("full", full);
       $("plusReading").title = full ? "You can read up to " + MAX_READING + " books at a time" : "Add a book you're reading now";
       $("shelfLabels").hidden = !shelfBooks.length && !editing;
+      if (shelfBooks.length) $("greet").hidden = true;   // the hello goes once the first book is on the shelf
       measureZones();
       updateArrows();
     };
@@ -1553,6 +1554,33 @@
     const done = () => { updateCount(); updateArrows(); updateEditUI(); switchEl.hidden = false; movePill(switchEl.querySelector('[aria-pressed="true"]')); showBook(b); setNotice("Added " + b.title + " to your shelf."); };
     const reading = b.status === "Reading";
     if (reduceMotion) { el.classList.remove("incoming"); el.style.width = finalWidth; if (!reading) shelf.scrollLeft = 0; return done(); }
+
+    // A book you're reading drops in from above its own corner and leans into the pile,
+    // rather than flying across the read books from the form.
+    if (reading) {
+      requestAnimationFrame(() => requestAnimationFrame(() => { el.style.width = finalWidth; }));
+      await wait(380);
+      el.classList.remove("incoming");
+      const t = tiltOf(b);
+      await el.animate([
+        { transform: "translateY(-300px) rotate(0deg)", opacity: 0 },
+        { transform: "translateY(-240px) rotate(0deg)", opacity: 1, offset: 0.12 },
+        { transform: "translateY(0) rotate(0deg)", offset: 0.62 },
+        { transform: t + "translateY(-6px)", offset: 0.82 },
+        { transform: t + "translateY(0)" }
+      ], { duration: 900, easing: "cubic-bezier(.45,0,.4,1)" }).finished;
+      el.style.transform = "none";
+      const rect = el.getBoundingClientRect();
+      el.style.transform = "";
+      land(el, rect, b);
+      const pile = entries.filter(x => x !== entry && x.b.status === "Reading" && !x.el.classList.contains("is-hidden")).reverse();
+      pile.forEach((n, i) => {
+        n.el.style.transformOrigin = "bottom left";
+        n.el.animate([{ transform: tiltOf(n.b) + "rotate(0deg)" }, { transform: tiltOf(n.b) + "rotate(" + (-3 + i) + "deg)" }, { transform: tiltOf(n.b) + "rotate(0deg)" }],
+          { duration: 420, delay: 40 + i * 50, easing: "cubic-bezier(.3,.7,.4,1)" }).finished.then(() => { n.el.style.transformOrigin = ""; });
+      });
+      return done();
+    }
 
     const flyer = makeBookEl(b);
     flyer.classList.add("flyer");

@@ -1,11 +1,11 @@
 title (required),author (required),category (required: Fiction or Non-fiction),status (optional: Read or Reading; up to 3 Reading; empty means Read),thickness (optional: Thin / Medium / Thick),size (optional: Small / Regular / Tall),spine (optional: Solid / Gradient),color (optional: a colour name or #hex),color2 (optional: colour a gradient fades to),note
-Man Search for Meaning ,Viktor E,Non-fiction,Read,Thin ,Small,Gradient,Black ,Grey ,"Everything can be taken from a man but one thing: the last of the human freedoms—to choose one’s attitude in any given set of circumstances, to choose one’s own way"
+Man's Search for Meaning ,Viktor E,Non-fiction,Read,Thin ,Small,Gradient,Black ,Grey ,"Everything can be taken from a man but one thing: the last of the human freedoms—to choose one’s attitude in any given set of circumstances, to choose one’s own way"
 The Almanack of Naval Ravikant,Eric Jorgenson,Non-fiction,Read,Medium ,Regular ,Solid,White ,,Desire is a contract you make with yourself to be unhappy until you get what you want
 Sapiens,Yuval Noah Harari,Non-fiction,Read,Thick,Regular ,Solid,White ,,You could never convince a monkey to give you a banana by promising him limitless bananas after death in monkey heaven.
 Homo Deus ,Yuval Noah Harari,Non-fiction,Read,Thick,Regular ,Solid,Black ,,"Sapiens rule the world because only they can weave an intersubjective web of meaning: a web of laws, forces, entities and places that exist purely in their common imagination. This web allows humans alone to organise crusades, socialist revolutions and human rights movements."
 Money Wise,Deepak Shenoy ,Non-fiction,Read,Medium ,Regular ,Solid,Yellow ,,"Most of the money in the markets is made by having a position, not by standing outside the airplane wondering if it’s a good time to get in"
 Lean In,Sheryl Sandberg,Non-fiction,Read,Medium,Regular ,Solid,White ,,Women should learn to take a seat at the table.
-The Happiness Hypothesis,Jonathan Haidt,Non-fiction,Read,Thick,Regular ,Gradient,Deep blue ,blue ,"Real happiness comes from within and outside, it comes from within."
+The Happiness Hypothesis,Jonathan Haidt,Non-fiction,Read,Thick,Regular ,Gradient,Deep blue ,blue ,Love and work are to people what water and sunshine are to plants
 Tuesdays with Morrie,Mitch Albom,Non-fiction,Read,Thin,Small,Solid,Tan yellow,,"This is part of what a family is about, not just love. It's knowing that your family will be there watching out for you. Nothing else will give you that. Not money. Not fame. Not work"
 The Tipping Point,Malcolm Gladwell,Non-fiction,Read,Thin,Regular ,Solid,Red ,,"The tipping point is that magic moment when an idea, trend, or social behavior crosses a threshold, tips, and spreads like wildfire."
 Blink,Malcolm Gladwell,Non-fiction,Read,Medium,Regular ,Solid,Blue ,,There can be as much value in the blink of an eye as in months of rational analysis
@@ -23,7 +23,6 @@ You may wander through the universe incognito;
 Make vassals of the gods; be ever youthful;
 You may walk in water and live in fire;
 But control of the mind is better and more difficult"
-The Alchemist,Paulo Coelho,Non-fiction,Read,Medium,Regular ,Solid ,Orange ,,"And, when you want something, all the universe conspires in helping you to achieve it"
 Secret of Secrets ,Dan Brown,Fiction,Read,Thick,Tall,Solid,Dark blue ,,We proclaim the Truth that serves our needs.
 The Lost Symbol,Dan Brown,Fiction,Read,Thick,Tall,Solid,Tan yellow,,To live in the world without becoming aware of the meaning of the world is like wandering about in a great library without touching the books
 The Stranger in the Lifeboat,Mitch Albom,Fiction,Read,Thin,Small,Solid,White ,,Worry is something you create ... to fill a void [of] faith
@@ -31,4 +30,4 @@ The Kite Runner,Khaled Hosseini,Fiction,Read,Medium,Regular ,Gradient,Yellow ,Gr
 City of Joy ,Dominique Lapierre,Fiction,Read,Medium,Small,Solid,White,,"Life is not hard, Madame. It is only different than what we are used to."
 1984,George Orwell,Fiction,Read,Medium,Regular ,Solid,Red ,,Who controls the past controls the future. Who controls the present controls the past
 Animal Farm,George Orwell,Fiction,Read,Thin ,Small,Solid ,Red ,,"All animals are equal, but some animals are more equal than others."
-When Breath Becomes Air,Paul Kalanithi,Non-fiction,Reading ,Medium,Regular ,Gradient,White ,Sky blue,What makes life meaningful enough to go on living?
+The Alchemist,Paulo Coelho,Non-fiction,Reading,Medium,Regular ,Solid ,Orange ,,"And, when you want something, all the universe conspires in helping you to achieve it"
