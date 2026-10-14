@@ -679,7 +679,7 @@
 <dialog id="uploadDialog" aria-labelledby="uploadTitle">
   <div class="dlg-body">
     <h2 id="uploadTitle">Upload list</h2>
-    <p class="lead">Add the books you've already read in one go.</p>
+    <p class="lead">Add your books in one go.</p>
     <label class="drop" id="drop">
       <input type="file" id="fileIn" accept=".csv,text/csv">
       <strong>Choose a CSV file</strong>
@@ -713,10 +713,10 @@
   const STORE_KEY = "my-book-shelf:v1";     // where edits are kept in this browser
   // The sample file: required columns first, and each heading says what goes in it
   const SAMPLE_CSV =
-    "title (required),author (required),category (required: Fiction or Non-fiction),thickness (optional: Thin / Medium / Thick),size (optional: Small / Regular / Tall),spine (optional: Solid / Gradient),color (optional: a colour name or #hex),color2 (optional: colour a gradient fades to),note (optional: a favourite line)\n" +
-    "Atomic Habits,James Clear,Non-fiction,Medium,Regular,Solid,white,,Small habits add up over time.\n" +
-    "Kane and Abel,Jeffrey Archer,Fiction,Thick,Regular,Gradient,blue,navy,\n" +
-    "The Alchemist,Paulo Coelho,Fiction,,,,,,\n";
+    "title (required),author (required),category (required: Fiction or Non-fiction),status (optional: Read or Reading; up to 3 Reading; empty means Read),thickness (optional: Thin / Medium / Thick),size (optional: Small / Regular / Tall),spine (optional: Solid / Gradient),color (optional: a colour name or #hex),color2 (optional: colour a gradient fades to),note (optional: a favourite line)\n" +
+    "Atomic Habits,James Clear,Non-fiction,Read,Medium,Regular,Solid,white,,Small habits add up over time.\n" +
+    "Kane and Abel,Jeffrey Archer,Fiction,Reading,Thick,Regular,Gradient,blue,navy,\n" +
+    "The Alchemist,Paulo Coelho,Fiction,,,,,,,\n";
   const CSV_COLUMNS = ["title","author","category","subject","status","thickness","size","spine","color","color2","pages","note"];
 
   // ---------- Colours ----------
@@ -1653,7 +1653,9 @@
           (incomplete.length === 1 ? "it" : "they") + " won't be added: " + names + ". Fill these in and upload the file again.");
       }
       if (recs.length > unique.length) notes.push((recs.length - unique.length) + " repeated title" + (recs.length - unique.length === 1 ? " was" : "s were") + " skipped.");
-      if (pending.length) notes.push("Thickness, size and colours left empty are picked at random. All of these are added as read.");
+      const readingRows = pending.filter(r => normStatus(r.status) === "Reading").length;
+      if (readingRows) notes.push(readingRows + (readingRows === 1 ? " book is" : " books are") + " marked Reading and will go in your currently reading corner (up to " + MAX_READING + ").");
+      if (pending.length) notes.push("Thickness, size and colours left empty are picked at random.");
       summary.querySelector("ul").innerHTML = notes.map(() => "<li></li>").join("");
       summary.querySelectorAll("li").forEach((li, i) => li.textContent = notes[i]);
       $("importMode").hidden = !shelfBooks.length || !pending.length;
@@ -1678,14 +1680,20 @@
     const existing = new Set((replace ? [] : shelfBooks).map(b => b.title.toLowerCase()));
     const toAdd = pending.filter(r => !existing.has(r.title.toLowerCase()));
     const skipped = pending.length - toAdd.length;
-    const books = toAdd.map(r => cleanBook({ ...r, status: "Read" }));
+    // "Reading" in the status column puts a book in the currently reading corner, up to the limit
+    let room = MAX_READING - (replace ? 0 : readingCount()), overLimit = 0;
+    const books = toAdd.map(r => {
+      const b = cleanBook(r);
+      if (b.status === "Reading") { if (room > 0) room--; else { b.status = "Read"; overLimit++; } }
+      return b;
+    });
     upDialog.close();
     if (replace) await clearShelf();
     if (currentFilter !== "all") { selectFilter(filterBtns[0]); await wait(reduceMotion ? 0 : 450); }
     shelfBooks.push(...books);
     save();
     await cascadeIn(books);
-    setNotice("Your books are on the shelf." + (skipped ? " " + skipped + (skipped === 1 ? " was" : " were") + " already there, so " + (skipped === 1 ? "it was" : "they were") + " skipped." : ""));
+    setNotice("Your books are on the shelf." + (overLimit ? " Only " + MAX_READING + " books can be in currently reading, so " + overLimit + " went to the read side." : "") + (skipped ? " " + skipped + (skipped === 1 ? " was" : " were") + " already there, so " + (skipped === 1 ? "it was" : "they were") + " skipped." : ""));
   });
 
   async function clearShelf() {

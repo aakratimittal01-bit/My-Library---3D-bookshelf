@@ -17,7 +17,7 @@ To change the name at the top of the page, edit the `<h1>` and `<title>` in `ind
 
 ## How saving works
 
-Everything you change while editing is saved in your browser straight away, so you can close the tab and carry on later on the same device. Visitors to your site see whatever is in `books.csv` in your repository; your edits become public when you download `books.csv` from the All books page and commit it.
+Everything you change while editing is saved in your browser straight away, so you can close the tab and carry on later on the same device. Visitors to your site see whatever is in `books.csv` in your repository, including which books are in the currently reading corner (its status column); your edits become public when you download `books.csv` from the All books page and commit it.
 
 **Edit this shelf** at the bottom of the page switches on editing; **Done editing** in the same spot shows the shelf as visitors see it. If someone else clicks **Edit this shelf** on your site, their changes stay in their own browser and never touch your repository.
 
@@ -33,7 +33,7 @@ Click a book while editing to see **Edit**, **Remove** and, for books you're rea
 
 ## Uploading a list
 
-Choose **Upload in bulk** in the add form, or **Upload list** on the All books page, and pick a CSV file (for example a Google Sheet downloaded as **Comma-separated values**). Every book needs a title, author and category; everything else is optional. Click **Download sample CSV** in the upload window for a starting file: its column headings say what each column takes. Books on a list are added as read; books already on the shelf are skipped, or you can replace the whole shelf. Files saved by Excel in its older format are read correctly too.
+Choose **Upload in bulk** in the add form, or **Upload list** on the All books page, and pick a CSV file (for example a Google Sheet downloaded as **Comma-separated values**). Every book needs a title, author and category; everything else is optional. Click **Download sample CSV** in the upload window for a starting file: its column headings say what each column takes. The optional **status** column takes Read or Reading: books marked Reading go to the currently reading corner (up to three), and an empty status means read. Books already on the shelf are skipped, or you can replace the whole shelf. Files saved by Excel in its older format are read correctly too.
 
 ## All books
 
