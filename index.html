@@ -1183,7 +1183,8 @@
   function stopEditing() {
     editing = false;
     writeStore({ editing: false });
-    renderShelf(published && published.length ? published : (readStore().books || []).map(cleanBook));
+    const own = readStore().books;
+    renderShelf(Array.isArray(own) ? own.map(cleanBook) : (published || []));
     setNotice("");
   }
   editLink.addEventListener("click", () => editing ? stopEditing() : startEditing());
@@ -2065,7 +2066,9 @@
     editing = !!stored.editing || new URLSearchParams(location.search).has("edit") || (!hasPublished && !hasLocal);
     if (editing) writeStore({ editing: true });
     // Visitors see the published file; whoever is editing sees their own working copy.
-    renderShelf(editing ? (local || published || []) : (hasPublished ? published : local || []));
+    // Whoever has a shelf saved in this browser sees it, editing or not.
+    // Anyone else sees the books.csv published with the site.
+    renderShelf(local || published || []);
     if (editing && !local) save();
     updateProfile();
     route();

@@ -17,9 +17,11 @@ To change the name at the top of the page, edit the `<h1>` and `<title>` in `ind
 
 ## How saving works
 
-Everything you change while editing is saved in your browser straight away, so you can close the tab and carry on later on the same device. Visitors to your site see whatever is in `books.csv` in your repository, including which books are in the currently reading corner (its status column); your edits become public when you download `books.csv` from the All books page and commit it.
+Everything you add or change is saved in your browser straight away, and it's what you see whenever you open your shelf on that device, while editing or after **Done editing**. Adding books never needs a CSV file.
 
-**Edit this shelf** at the bottom of the page switches on editing; **Done editing** in the same spot shows the shelf as visitors see it. If someone else clicks **Edit this shelf** on your site, their changes stay in their own browser and never touch your repository.
+`books.csv` in your repository is what *other people* see when they open your link, since your browser's copy lives only on your computer. To share your latest shelf with them, open **All books**, click the download icon, and upload that `books.csv` to your repository. If you only use the shelf for yourself, you can skip this.
+
+**Edit this shelf** at the bottom of the page shows the + buttons and editing links; **Done editing** hides them. If someone else clicks **Edit this shelf** on your site, their changes stay in their own browser and never touch your repository.
 
 ## Adding and changing books
 
