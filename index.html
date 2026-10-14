@@ -830,6 +830,13 @@
   }
 
   // ---------- CSV ----------
+  // Excel often saves CSV files in an older Windows encoding rather than UTF-8. Reading those
+  // as UTF-8 turns curly apostrophes, dashes and accents into "\uFFFD" marks, so fall back to
+  // the Windows encoding whenever the file isn't valid UTF-8.
+  function decodeCSV(buffer) {
+    try { return new TextDecoder("utf-8", { fatal: true }).decode(buffer); }
+    catch { return new TextDecoder("windows-1252").decode(buffer); }
+  }
   function parseCSV(text) {
     const rows = []; let row = [], cell = "", q = false;
     text = text.replace(/^\uFEFF/, "");
@@ -1623,7 +1630,7 @@
     importBtn.disabled = true;
     try {
       if (file.size > 2e6) throw new Error("too-big");
-      const rows = parseCSV(await file.text());
+      const rows = parseCSV(decodeCSV(await file.arrayBuffer()));
       if (!rows.length) throw new Error("empty");
       const header = rows[0].map(h => h.replace(/\(.*?\)/g, "").trim().toLowerCase());
       const missingCols = ["title", "author", "category"].filter(k => !ALIASES[k].some(n => header.includes(n)));
@@ -2037,7 +2044,7 @@
     try {
       const res = await fetch(BOOKS_FILE, { cache: "no-cache" });
       if (!res.ok) return null;
-      return rowsToRecords(parseCSV(await res.text())).map(cleanBook);
+      return rowsToRecords(parseCSV(decodeCSV(await res.arrayBuffer()))).map(cleanBook);
     } catch { return null; }
   }
   (async () => {
