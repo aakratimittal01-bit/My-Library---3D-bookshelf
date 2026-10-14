@@ -4,6 +4,11 @@ A shelf of the books you've read, drawn as real spines. The books you're reading
 
 It's a single web page with no server and no sign-up, so it runs on GitHub Pages for free.
 
+
+https://github.com/user-attachments/assets/a3faca88-5f2b-41dd-b4ee-adb03b1f30ac
+
+
+
 ## Make your own shelf
 
 1. Click **Use this template** (or fork this repository) to get your own copy.
