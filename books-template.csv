@@ -1,4 +1,4 @@
 title (required),author (required),category (required: Fiction or Non-fiction),status (optional: Read or Reading; up to 3 Reading; empty means Read),thickness (optional: Thin / Medium / Thick),size (optional: Small / Regular / Tall),spine (optional: Solid / Gradient),color (optional: a colour name or #hex),color2 (optional: colour a gradient fades to),note (optional: a favourite line)
-Atomic Habits,James Clear,Non-fiction,Read,Medium,Regular,Solid,white,,Small habits add up over time.
-Kane and Abel,Jeffrey Archer,Fiction,Reading,Thick,Regular,Gradient,blue,navy,
-The Alchemist,Paulo Coelho,Fiction,,,,,,,
+The Happiness Hypothesis,Jonathan Haidt,Non-fiction,Read,Thick,Regular ,Gradient,Deep blue ,blue ,Love and work are to people what water and sunshine are to plants
+Ikigai,Hector Garcia ,Non-fiction,,Medium,Small,Solid,Sky blue ,,Concentrating on one thing at a time may be the single most important factor in achieving flow.
+The Alchemist,Paulo Coelho,Non-fiction,Reading,Medium,Regular ,Solid ,Orange ,,"And, when you want something, all the universe conspires in helping you to achieve it"
