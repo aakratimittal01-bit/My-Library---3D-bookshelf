@@ -1,6 +1,6 @@
 # My library
 
-A shelf of the books you've read, drawn as real spines. The books you're reading now lean against a bookend, finished ones stand in a row, and a hanging lamp turns the room into a night library.
+A shelf of the books you've read, drawn as real spines. The books you're reading lean against a bookend, finished ones stand in a row, and a hanging lamp turns the room into a night library.
 
 It's a single web page with no server and no sign-up, so it runs on GitHub Pages for free.
 
